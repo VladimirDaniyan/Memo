@@ -5,8 +5,8 @@ import android.support.v4.app.FragmentActivity;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.WindowManager;
 import android.widget.Button;
-
 
 public class MainActivity extends FragmentActivity {
 
@@ -14,20 +14,11 @@ public class MainActivity extends FragmentActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		
-		Button button = (Button) findViewById(R.id.button1);
-		button.setOnClickListener(new OnClickListener() {
-			
-			public void onClick(View v) {
-				showDialog();
-				
-			}
-		});
+
+		getWindow().setFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND,
+				WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+
 	}
-	
-	void showDialog() {
-		new AddNoteDialog().show(getFragmentManager(), "AddNoteDialog");
-	}	
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
