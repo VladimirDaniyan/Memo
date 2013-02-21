@@ -20,8 +20,15 @@
         <requestFocus />
     </EditText>
 
+    <Button
+        android:id="@+id/button1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="addNote"
+        android:text="Add Text" />
+
     <ListView
-        android:id="@+id/listView1"
+        android:id="@android:id/list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
     </ListView>

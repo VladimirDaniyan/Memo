@@ -1,10 +1,12 @@
 package com.azazeleleven.android.memo;
 
+import android.app.ListActivity;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 import android.view.Menu;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -12,7 +14,7 @@ import android.widget.SimpleCursorAdapter;
 
 import com.azazeleleven.android.memo.DaoMaster.DevOpenHelper;
 
-public class MainActivity extends FragmentActivity {
+public class MainActivity extends ListActivity {
 
 	private SQLiteDatabase db;
 
@@ -33,9 +35,8 @@ public class MainActivity extends FragmentActivity {
 
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND,
 				WindowManager.LayoutParams.FLAG_DIM_BEHIND);
-		
+
 		editText = (EditText) findViewById(R.id.editText1);
-		ListView lv = (ListView) findViewById(R.id.listView1);
 
 		DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, "memo-db",
 				null);
@@ -53,7 +54,7 @@ public class MainActivity extends FragmentActivity {
 		SimpleCursorAdapter adapter = new SimpleCursorAdapter(this,
 				android.R.layout.simple_expandable_list_item_1, cursor, from,
 				to);
-		lv.setAdapter(adapter);
+		setListAdapter(adapter);
 
 	}
 
@@ -63,7 +64,23 @@ public class MainActivity extends FragmentActivity {
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
 	}
-	
-	
+
+	public void addNote(View view) {
+		String memoText = editText.getText().toString();
+		editText.setText("");
+
+		Note memo = new Note(null, memoText, null, null);
+		memoDao.insert(memo);
+		Log.d("Memo", "Inserted new memo, ID: " + memo.getId());
+
+		cursor.requery();
+	}
+
+	@Override
+	public void onListItemClick(ListView list, View view, int position, long id) {
+		memoDao.deleteByKey(id);
+		cursor.requery();
+	}
+
 
 }
