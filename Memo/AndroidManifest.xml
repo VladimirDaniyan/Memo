@@ -26,6 +26,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name="com.azazeleleven.android.memo.EditMemoActivity"
+            android:label="@string/title_activity_edit_memo"
+            android:parentActivityName="com.azazeleleven.android.memo.MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.azazeleleven.android.memo.MainActivity" />
+        </activity>
     </application>
 
 </manifest>
