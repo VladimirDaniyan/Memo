@@ -29,7 +29,8 @@
         <activity
             android:name="com.azazeleleven.android.memo.EditMemoActivity"
             android:label="@string/title_activity_edit_memo"
-            android:parentActivityName="com.azazeleleven.android.memo.MainActivity">
+            android:parentActivityName="com.azazeleleven.android.memo.MainActivity"
+            android:theme="@android:style/Theme.Holo.Light.Dialog" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.azazeleleven.android.memo.MainActivity" />

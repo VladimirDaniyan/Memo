@@ -7,20 +7,22 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.WindowManager;
-import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+
+import com.azazeleleven.android.memo.DaoMaster.DevOpenHelper;
 
 public class MainActivity extends ListActivity {
 
-	private SQLiteDatabase db;
+	public static final CharSequence PREF_NAME = "pref_name";
 
+	private DaoMaster daoMaster;
+	private DaoSession daoSession;
 	private NoteDao memoDao;
 
 	private Cursor cursor;
 
-	public static final CharSequence PREF_NAME = "pref_name";
+	private SQLiteDatabase db;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -29,7 +31,23 @@ public class MainActivity extends ListActivity {
 
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND,
 				WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+		
+		DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, "memo-db",
+				null);
+		db = helper.getReadableDatabase();
+		daoMaster = new DaoMaster(db);
+		daoSession = daoMaster.newSession();
+		memoDao = daoSession.getNoteDao();
 
+		String textColumn = NoteDao.Properties.Text.columnName;
+		cursor = db.query(memoDao.getTablename(), memoDao.getAllColumns(),
+				null, null, null, null, null);
+		String[] from = { textColumn };
+		int[] to = { android.R.id.text1 };
+
+		SimpleCursorAdapter adapter = new SimpleCursorAdapter(this,
+				android.R.layout.simple_list_item_2, cursor, from, to);
+		setListAdapter(adapter);
 	}
 
 	@Override
@@ -43,15 +61,9 @@ public class MainActivity extends ListActivity {
 		return super.onOptionsItemSelected(item);
 	}
 
-	public void addNote(MenuItem item) {
+	public void addMemo(MenuItem item) {
 		Intent intent = new Intent(this, EditMemoActivity.class);
 		startActivity(intent);
-	}
-
-	@Override
-	public void onListItemClick(ListView list, View view, int position, long id) {
-		memoDao.deleteByKey(id);
-		cursor.requery();
 	}
 
 }

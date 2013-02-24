@@ -24,11 +24,14 @@ public final class R {
         public static final int ic_launcher=0x7f020000;
     }
     public static final class id {
-        public static final int LinearLayout1=0x7f0a0001;
-        public static final int action_add=0x7f0a0004;
-        public static final int action_settings=0x7f0a0003;
-        public static final int editText1=0x7f0a0000;
-        public static final int listView1=0x7f0a0002;
+        public static final int LinearLayout1=0x7f0a0004;
+        public static final int LinearLayout2=0x7f0a0000;
+        public static final int action_add=0x7f0a0007;
+        public static final int action_settings=0x7f0a0006;
+        public static final int button_cancel=0x7f0a0003;
+        public static final int button_ok=0x7f0a0002;
+        public static final int edit_text_memo=0x7f0a0001;
+        public static final int listView1=0x7f0a0005;
     }
     public static final class integer {
         public static final int lines=0x7f060000;
