@@ -5,8 +5,12 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.SimpleCursorAdapter;
 
 import com.azazeleleven.android.memo.DaoMaster.DevOpenHelper;
@@ -14,6 +18,8 @@ import com.azazeleleven.android.memo.DaoMaster.DevOpenHelper;
 public class MainActivity extends ListActivity {
 
 	public static final CharSequence PREF_NAME = "pref_name";
+
+	private static final int DELETE_ID = Menu.FIRST;
 
 	private DaoMaster daoMaster;
 	private DaoSession daoSession;
@@ -45,6 +51,8 @@ public class MainActivity extends ListActivity {
 		SimpleCursorAdapter adapter = new SimpleCursorAdapter(this,
 				android.R.layout.simple_list_item_2, cursor, from, to);
 		setListAdapter(adapter);
+		
+		registerForContextMenu(getListView());
 	}
 
 	@SuppressWarnings("deprecation")
@@ -52,6 +60,24 @@ public class MainActivity extends ListActivity {
 	protected void onResume() {
 		cursor.requery();
 		super.onResume();
+	}
+
+	@Override
+	public void onCreateContextMenu(ContextMenu menu, View v,
+			ContextMenuInfo menuInfo) {
+		super.onCreateContextMenu(menu, v, menuInfo);
+		menu.add(0, DELETE_ID, 0, R.string.menu_delete);
+	}
+
+	@Override
+	public boolean onContextItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case DELETE_ID:
+			AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+			memoDao.deleteByKey(info.id);
+			cursor.requery();
+		}
+		return super.onContextItemSelected(item);
 	}
 
 	@Override

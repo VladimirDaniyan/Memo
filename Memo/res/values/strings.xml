@@ -8,7 +8,7 @@
     <string name="title_activity_main">Memo</string>
     <string name="show_dialog">Show Dialog</string>
     <string name="add_new_note">Add Note</string>
+    <string name="menu_delete">Delete</string>
     <string name="title_activity_edit_memo">EditMemoActivity</string>
-    <string name="hello_world">Hello world!</string>
 
 </resources>
