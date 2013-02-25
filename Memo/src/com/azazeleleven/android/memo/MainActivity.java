@@ -7,7 +7,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.WindowManager;
 import android.widget.SimpleCursorAdapter;
 
 import com.azazeleleven.android.memo.DaoMaster.DevOpenHelper;
@@ -29,9 +28,6 @@ public class MainActivity extends ListActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
-		getWindow().setFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND,
-				WindowManager.LayoutParams.FLAG_DIM_BEHIND);
-		
 		DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, "memo-db",
 				null);
 		db = helper.getReadableDatabase();
@@ -45,9 +41,17 @@ public class MainActivity extends ListActivity {
 		String[] from = { textColumn };
 		int[] to = { android.R.id.text1 };
 
+		@SuppressWarnings("deprecation")
 		SimpleCursorAdapter adapter = new SimpleCursorAdapter(this,
 				android.R.layout.simple_list_item_2, cursor, from, to);
 		setListAdapter(adapter);
+	}
+
+	@SuppressWarnings("deprecation")
+	@Override
+	protected void onResume() {
+		cursor.requery();
+		super.onResume();
 	}
 
 	@Override
