@@ -11,13 +11,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView.AdapterContextMenuInfo;
+import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
 import com.azazeleleven.android.memo.DaoMaster.DevOpenHelper;
 
 public class MainActivity extends ListActivity {
-
-	public static final CharSequence PREF_NAME = "pref_name";
 
 	private static final int DELETE_ID = Menu.FIRST;
 
@@ -51,7 +50,7 @@ public class MainActivity extends ListActivity {
 		SimpleCursorAdapter adapter = new SimpleCursorAdapter(this,
 				android.R.layout.simple_list_item_2, cursor, from, to);
 		setListAdapter(adapter);
-		
+
 		registerForContextMenu(getListView());
 	}
 
@@ -69,15 +68,26 @@ public class MainActivity extends ListActivity {
 		menu.add(0, DELETE_ID, 0, R.string.menu_delete);
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case DELETE_ID:
-			AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+			AdapterContextMenuInfo info = (AdapterContextMenuInfo) item
+					.getMenuInfo();
 			memoDao.deleteByKey(info.id);
 			cursor.requery();
 		}
 		return super.onContextItemSelected(item);
+	}
+
+	@Override
+	protected void onListItemClick(ListView l, View v, int position, long id) {
+		cursor.moveToPosition(position);
+		Intent intent = new Intent(this, EditMemoActivity.class);
+		intent.putExtra("memoText", cursor.getString(cursor
+				.getColumnIndexOrThrow("TEXT")));
+		startActivity(intent);
 	}
 
 	@Override
