@@ -25,12 +25,13 @@ public final class R {
         public static final int ic_stat_name=0x7f020001;
     }
     public static final class id {
-        public static final int LinearLayout1=0x7f0a0004;
+        public static final int LinearLayout1=0x7f0a0005;
         public static final int LinearLayout2=0x7f0a0000;
-        public static final int action_add=0x7f0a0006;
-        public static final int action_settings=0x7f0a0005;
-        public static final int button_cancel=0x7f0a0002;
-        public static final int button_ok=0x7f0a0003;
+        public static final int action_add=0x7f0a0007;
+        public static final int action_settings=0x7f0a0006;
+        public static final int button_cancel=0x7f0a0003;
+        public static final int button_ok=0x7f0a0004;
+        public static final int checkBox1=0x7f0a0002;
         public static final int edit_text_memo=0x7f0a0001;
     }
     public static final class integer {
@@ -49,6 +50,7 @@ public final class R {
         public static final int action_settings=0x7f070003;
         public static final int add_new_note=0x7f070006;
         public static final int app_name=0x7f070000;
+        public static final int create_notification=0x7f070009;
         public static final int extension_description=0x7f070002;
         public static final int extension_title=0x7f070001;
         public static final int menu_delete=0x7f070007;

@@ -4,10 +4,10 @@ import android.app.Activity;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 
@@ -20,6 +20,7 @@ public class EditMemoActivity extends Activity {
 	private DaoSession daoSession;
 	private NoteDao memoDao;
 	private SQLiteDatabase db;
+	private Long mRowId;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -31,7 +32,9 @@ public class EditMemoActivity extends Activity {
 		Bundle extras = getIntent().getExtras();
 		if (extras != null) {
 			String memoText = extras.getString("memoText");
-			
+			mRowId = extras.getLong("mRowId");
+			Log.d("EditMemoActivity", "Get Note, ID: " + mRowId);
+			Log.d("EditMemoActivity", "Get Note, TEXT: " + memoText);
 			if (memoText != null) {
 				editText.setText(memoText);
 			}
@@ -50,18 +53,21 @@ public class EditMemoActivity extends Activity {
 		String memoText = editText.getText().toString();
 		editText.setText("");
 
-		Note memo = new Note(null, memoText, null, null);
-		memoDao.insert(memo);
-		
+		Note memo = new Note(mRowId, memoText, null, null);
+		memo.setId(mRowId);
+		memoDao.insertOrReplace(memo);
+		Log.d("MainActiity", "Inserted new note, ID: " + memo.getId());
+
 		Intent intent = new Intent(this, MainActivity.class);
-		PendingIntent pIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-		
+		PendingIntent pIntent = PendingIntent.getActivity(this, 0, intent,
+				PendingIntent.FLAG_UPDATE_CURRENT);
+
 		NotificationCompat.Builder builder = new NotificationCompat.Builder(
 				this).setSmallIcon(R.drawable.ic_stat_name)
 				.setContentTitle("Memo").setContentText(memoText);
-		
+
 		builder.setContentIntent(pIntent);
-		
+
 		int mNotificationId = 001;
 		NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		mNotifyMgr.notify(mNotificationId, builder.build());

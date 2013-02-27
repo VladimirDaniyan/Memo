@@ -10,5 +10,6 @@
     <string name="add_new_note">Add Note</string>
     <string name="menu_delete">Delete</string>
     <string name="title_activity_edit_memo">Add Memo</string>
+    <string name="create_notification">Create Notification</string>
 
 </resources>

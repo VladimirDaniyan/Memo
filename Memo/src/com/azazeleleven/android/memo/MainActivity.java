@@ -15,6 +15,7 @@ import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
 import com.azazeleleven.android.memo.DaoMaster.DevOpenHelper;
+import com.azazeleleven.android.memo.NoteDao.Properties;
 
 public class MainActivity extends ListActivity {
 
@@ -87,6 +88,7 @@ public class MainActivity extends ListActivity {
 		Intent intent = new Intent(this, EditMemoActivity.class);
 		intent.putExtra("memoText", cursor.getString(cursor
 				.getColumnIndexOrThrow("TEXT")));
+		intent.putExtra("mRowId", id);
 		startActivity(intent);
 	}
 
