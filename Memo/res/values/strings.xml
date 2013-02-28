@@ -11,5 +11,6 @@
     <string name="menu_delete">Delete</string>
     <string name="title_activity_edit_memo">Add Memo</string>
     <string name="create_notification">Create Notification</string>
+    <string name="toast_input_required">You did not enter any text</string>
 
 </resources>

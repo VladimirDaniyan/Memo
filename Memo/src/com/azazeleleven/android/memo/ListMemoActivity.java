@@ -15,9 +15,8 @@ import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
 import com.azazeleleven.android.memo.DaoMaster.DevOpenHelper;
-import com.azazeleleven.android.memo.NoteDao.Properties;
 
-public class MainActivity extends ListActivity {
+public class ListMemoActivity extends ListActivity {
 
 	private static final int DELETE_ID = Menu.FIRST;
 
@@ -32,7 +31,7 @@ public class MainActivity extends ListActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
+		setContentView(R.layout.activity_list_memo);
 
 		DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, "memo-db",
 				null);

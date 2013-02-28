@@ -31,7 +31,7 @@ public final class R {
         public static final int action_settings=0x7f0a0006;
         public static final int button_cancel=0x7f0a0003;
         public static final int button_ok=0x7f0a0004;
-        public static final int checkBox1=0x7f0a0002;
+        public static final int checkbox_add_to_notification=0x7f0a0002;
         public static final int edit_text_memo=0x7f0a0001;
     }
     public static final class integer {
@@ -39,7 +39,7 @@ public final class R {
     }
     public static final class layout {
         public static final int activity_edit_memo=0x7f030000;
-        public static final int activity_main=0x7f030001;
+        public static final int activity_list_memo=0x7f030001;
     }
     public static final class menu {
         public static final int edit_memo=0x7f090000;
@@ -57,6 +57,7 @@ public final class R {
         public static final int show_dialog=0x7f070005;
         public static final int title_activity_edit_memo=0x7f070008;
         public static final int title_activity_main=0x7f070004;
+        public static final int toast_input_required=0x7f07000a;
     }
     public static final class style {
         /** 
