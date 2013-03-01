@@ -1,4 +1,4 @@
-package com.azazeleleven.android.memo;
+package com.vladimirdaniyan.android.memo;
 
 import android.app.ListActivity;
 import android.content.Intent;
@@ -14,7 +14,11 @@ import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
+import com.azazeleleven.android.memo.DaoMaster;
+import com.azazeleleven.android.memo.DaoSession;
+import com.azazeleleven.android.memo.NoteDao;
 import com.azazeleleven.android.memo.DaoMaster.DevOpenHelper;
+import com.vladimirdaniyan.android.memo.R;
 
 public class ListMemoActivity extends ListActivity {
 

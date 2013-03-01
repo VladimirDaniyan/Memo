@@ -1,4 +1,4 @@
-package com.azazeleleven.android.memo;
+package com.vladimirdaniyan.android.memo;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -16,7 +16,12 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.azazeleleven.android.memo.DaoMaster;
+import com.azazeleleven.android.memo.DaoSession;
+import com.azazeleleven.android.memo.Note;
+import com.azazeleleven.android.memo.NoteDao;
 import com.azazeleleven.android.memo.DaoMaster.DevOpenHelper;
+import com.vladimirdaniyan.android.memo.R;
 
 public class EditMemoActivity extends Activity {
 

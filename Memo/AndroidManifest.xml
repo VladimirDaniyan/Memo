@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.azazeleleven.android.memo"
+    package="com.vladimirdaniyan.android.memo"
     android:versionCode="1"
     android:versionName="1.0" >
 
@@ -15,7 +15,7 @@
         android:theme="@style/AppTheme" >
       
         <activity
-            android:name="com.azazeleleven.android.memo.ListMemoActivity"
+            android:name="com.vladimirdaniyan.android.memo.ListMemoActivity"
             android:label="@string/title_activity_main" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -24,9 +24,9 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.azazeleleven.android.memo.EditMemoActivity"
+            android:name="com.vladimirdaniyan.android.memo.EditMemoActivity"
             android:label="@string/title_activity_edit_memo"
-            android:parentActivityName="com.azazeleleven.android.memo.ListMemoActivity"
+            android:parentActivityName="com.vladimirdaniyan.android.memo.ListMemoActivity"
             android:theme="@android:style/Theme.Holo.Light.Dialog" 
             android:exported="true">
             <meta-data
@@ -35,7 +35,7 @@
         </activity>
 
         <service
-            android:name=".MemoExtension"
+            android:name="com.vladimirdaniyan.android.memo.MemoExtension"
             android:icon="@drawable/ic_stat_memo"
             android:label="@string/extension_title"
             android:permission="com.google.android.apps.dashclock.permission.READ_EXTENSION_DATA" >
