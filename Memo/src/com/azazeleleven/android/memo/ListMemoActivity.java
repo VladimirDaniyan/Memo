@@ -22,7 +22,7 @@ public class ListMemoActivity extends ListActivity {
 
 	private DaoMaster daoMaster;
 	private DaoSession daoSession;
-	private MemoDao memoDao;
+	private NoteDao memoDao;
 
 	private Cursor cursor;
 
@@ -38,9 +38,9 @@ public class ListMemoActivity extends ListActivity {
 		db = helper.getReadableDatabase();
 		daoMaster = new DaoMaster(db);
 		daoSession = daoMaster.newSession();
-		memoDao = daoSession.getMemoDao();
+		memoDao = daoSession.getNoteDao();
 
-		String textColumn = MemoDao.Properties.Text.columnName;
+		String textColumn = NoteDao.Properties.Text.columnName;
 		cursor = db.query(memoDao.getTablename(), memoDao.getAllColumns(),
 				null, null, null, null, null);
 		String[] from = { textColumn };

@@ -23,7 +23,7 @@ public class EditMemoActivity extends Activity {
 	private EditText editText;
 	private DaoMaster daoMaster;
 	private DaoSession daoSession;
-	private MemoDao memoDao;
+	private NoteDao memoDao;
 	private SQLiteDatabase db;
 	private Long mRowId;
 
@@ -60,7 +60,7 @@ public class EditMemoActivity extends Activity {
 		db = helper.getWritableDatabase();
 		daoMaster = new DaoMaster(db);
 		daoSession = daoMaster.newSession();
-		memoDao = daoSession.getMemoDao();
+		memoDao = daoSession.getNoteDao();
 
 		String memoText = editText.getText().toString();
 		if (memoText.matches("")) {
@@ -69,7 +69,7 @@ public class EditMemoActivity extends Activity {
 			return;
 		}
 
-		Memo memo = new Memo(mRowId, memoText, null, null);
+		Note memo = new Note(mRowId, memoText, null, null);
 
 		memo.setId(mRowId);
 		memoDao.insertOrReplace(memo);
