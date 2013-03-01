@@ -84,8 +84,9 @@ public class EditMemoActivity extends Activity {
 		final CheckBox checkBox = (CheckBox) findViewById(R.id.checkbox_add_to_notification);
 		if (checkBox.isChecked()) {
 			NotificationCompat.Builder builder = new NotificationCompat.Builder(
-					this).setSmallIcon(R.drawable.ic_stat_name).setContentText(
-					editText.getText().toString());
+					this).setSmallIcon(R.drawable.ic_stat_memo)
+					.setContentTitle(editText.getText().toString())
+					.setContentText("memo");
 
 			// create intent for edit action when notification is clicked
 			Intent resultIntent = new Intent(this, ListMemoActivity.class);

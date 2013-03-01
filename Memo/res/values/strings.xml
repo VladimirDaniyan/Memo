@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Memo for DashClock</string>
+    <string name="app_name">Memo</string>
     <string name="extension_title">Quick Memo</string>
     <string name="extension_description">Adds a quick memo to your notification bar</string>
     <string name="action_settings">Settings</string>
@@ -12,5 +12,6 @@
     <string name="title_activity_edit_memo">Add Memo</string>
     <string name="create_notification">Create Notification</string>
     <string name="toast_input_required">You did not enter any text</string>
+    <string name="enter_text_hint">Add a new memo</string>
 
 </resources>

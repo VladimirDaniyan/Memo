@@ -36,7 +36,7 @@
 
         <service
             android:name=".MemoExtension"
-            android:icon="@drawable/ic_extension"
+            android:icon="@drawable/ic_stat_memo"
             android:label="@string/extension_title"
             android:permission="com.google.android.apps.dashclock.permission.READ_EXTENSION_DATA" >
             <intent-filter>

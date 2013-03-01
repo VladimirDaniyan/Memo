@@ -23,7 +23,7 @@ public final class R {
     public static final class drawable {
         public static final int ic_extension=0x7f020000;
         public static final int ic_launcher=0x7f020001;
-        public static final int ic_stat_name=0x7f020002;
+        public static final int ic_stat_memo=0x7f020002;
     }
     public static final class id {
         public static final int LinearLayout1=0x7f090005;
@@ -49,6 +49,7 @@ public final class R {
         public static final int add_new_note=0x7f060006;
         public static final int app_name=0x7f060000;
         public static final int create_notification=0x7f060009;
+        public static final int enter_text_hint=0x7f06000b;
         public static final int extension_description=0x7f060002;
         public static final int extension_title=0x7f060001;
         public static final int menu_delete=0x7f060007;
