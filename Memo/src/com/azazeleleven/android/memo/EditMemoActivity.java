@@ -1,13 +1,15 @@
 package com.azazeleleven.android.memo;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.TaskStackBuilder;
 import android.content.Context;
-import android.database.Cursor;
+import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -45,8 +47,6 @@ public class EditMemoActivity extends Activity {
 		if (extras != null) {
 			String memoText = extras.getString("memoText");
 			mRowId = extras.getLong("mRowId");
-			Log.d("EditMemoActivity", "Get Note, ID: " + mRowId);
-			Log.d("EditMemoActivity", "Get Note, TEXT: " + memoText);
 			if (memoText != null) {
 				editText.setText(memoText);
 			}
@@ -73,25 +73,34 @@ public class EditMemoActivity extends Activity {
 
 		memo.setId(mRowId);
 		memoDao.insertOrReplace(memo);
-		Log.d("MainActiity", "Inserted new note, ID: " + memo.getId());
 
 		showMemoNotification();
 
 		finish();
 	}
 
+	@SuppressLint("NewApi")
 	private void showMemoNotification() {
 		final CheckBox checkBox = (CheckBox) findViewById(R.id.checkbox_add_to_notification);
 		if (checkBox.isChecked()) {
 			NotificationCompat.Builder builder = new NotificationCompat.Builder(
-					this).setSmallIcon(R.drawable.ic_stat_name)
-					.setContentTitle("Quick Memo")
-					.setContentText(editText.getText().toString());
+					this).setSmallIcon(R.drawable.ic_stat_name).setContentText(
+					editText.getText().toString());
+
+			// create intent for edit action when notification is clicked
+			Intent resultIntent = new Intent(this, ListMemoActivity.class);
+
+			// artificial back stack for started activity
+			TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+			// Intent to start Activity at the top of the stack
+			stackBuilder.addNextIntent(resultIntent);
+			PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(
+					0, PendingIntent.FLAG_UPDATE_CURRENT);
+			builder.setContentIntent(resultPendingIntent);
+
 			NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 			int mNotificationId = 001;
 			nm.notify(mNotificationId, builder.build());
-			Log.d("EditMemoActivity", "Recieved text input: "
-					+ editText.getText().toString());
 			finish();
 		} else {
 			finish();
