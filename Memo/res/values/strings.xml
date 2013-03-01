@@ -2,8 +2,8 @@
 <resources>
 
     <string name="app_name">Memo for DashClock</string>
-    <string name="extension_title">Memo</string>
-    <string name="extension_description">Adds a quick note to your notification bar</string>
+    <string name="extension_title">Quick Memo</string>
+    <string name="extension_description">Adds a quick memo to your notification bar</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_main">Memo</string>
     <string name="show_dialog">Show Dialog</string>
