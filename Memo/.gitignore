@@ -9,8 +9,8 @@
 *.class
 
 # generated files
-bin/
 gen/
+bin/
 
 # Local configuration file (sdk path, etc)
 local.properties
@@ -24,3 +24,8 @@ proguard/
 
 # MAC
 .DS_Store
+
+/ic_launcher-web.png
+/proguard-project.txt
+/project.properties
+/assets
