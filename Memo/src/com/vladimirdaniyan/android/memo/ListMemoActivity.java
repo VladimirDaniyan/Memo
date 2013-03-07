@@ -98,6 +98,15 @@ public class ListMemoActivity extends ListActivity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.main, menu);
+		MenuItem item = menu.findItem(R.id.action_add);
+		item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+			
+			@Override
+			public boolean onMenuItemClick(MenuItem item) {
+				addMemo(item);
+				return true;
+			}
+		});
 		return true;
 	}
 

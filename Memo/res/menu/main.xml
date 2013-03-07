@@ -11,7 +11,6 @@
     <item
         android:id="@+id/action_add"
         android:icon="@android:drawable/ic_menu_add"
-        android:onClick="addMemo"
         android:showAsAction="always"
         android:title="@string/add_new_note"
         android:visible="true">
