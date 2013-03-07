@@ -4,12 +4,12 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.TaskStackBuilder;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -17,11 +17,10 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.azazeleleven.android.memo.DaoMaster;
+import com.azazeleleven.android.memo.DaoMaster.DevOpenHelper;
 import com.azazeleleven.android.memo.DaoSession;
 import com.azazeleleven.android.memo.Note;
 import com.azazeleleven.android.memo.NoteDao;
-import com.azazeleleven.android.memo.DaoMaster.DevOpenHelper;
-import com.vladimirdaniyan.android.memo.R;
 
 public class EditMemoActivity extends Activity {
 
