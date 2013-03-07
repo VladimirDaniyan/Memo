@@ -15,10 +15,12 @@ import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
 import com.azazeleleven.android.memo.DaoMaster;
+import com.azazeleleven.android.memo.DaoMaster.DevOpenHelper;
 import com.azazeleleven.android.memo.DaoSession;
 import com.azazeleleven.android.memo.NoteDao;
-import com.azazeleleven.android.memo.DaoMaster.DevOpenHelper;
-import com.vladimirdaniyan.android.memo.R;
+
+import de.timroes.swipetodismiss.SwipeDismissList;
+import de.timroes.swipetodismiss.SwipeDismissList.Undoable;
 
 public class ListMemoActivity extends ListActivity {
 
@@ -44,18 +46,35 @@ public class ListMemoActivity extends ListActivity {
 		daoSession = daoMaster.newSession();
 		memoDao = daoSession.getNoteDao();
 
-		String textColumn = NoteDao.Properties.Text.columnName;
+		final String textColumn = NoteDao.Properties.Text.columnName;
 		cursor = db.query(memoDao.getTablename(), memoDao.getAllColumns(),
 				null, null, null, null, null);
 		String[] from = { textColumn };
 		int[] to = { android.R.id.text1 };
 
 		@SuppressWarnings("deprecation")
+		final
 		SimpleCursorAdapter adapter = new SimpleCursorAdapter(this,
 				android.R.layout.simple_list_item_2, cursor, from, to);
 		setListAdapter(adapter);
 
 		registerForContextMenu(getListView());
+
+		SwipeDismissList.OnDismissCallback callback = new SwipeDismissList.OnDismissCallback() {
+
+			@SuppressWarnings("deprecation")
+			@Override
+			public Undoable onDismiss(ListView listView, int position) {
+				final long itemToDelete = adapter.getItemId(position);
+				memoDao.deleteByKey(itemToDelete);
+				cursor.requery();
+				return null;
+			
+			}
+		};
+		
+		SwipeDismissList swipeList = new SwipeDismissList(getListView(), callback);
+		
 	}
 
 	@SuppressWarnings("deprecation")
@@ -89,8 +108,8 @@ public class ListMemoActivity extends ListActivity {
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		cursor.moveToPosition(position);
 		Intent intent = new Intent(this, EditMemoActivity.class);
-		intent.putExtra("memoText", cursor.getString(cursor
-				.getColumnIndexOrThrow("TEXT")));
+		intent.putExtra("memoText",
+				cursor.getString(cursor.getColumnIndexOrThrow("TEXT")));
 		intent.putExtra("mRowId", id);
 		startActivity(intent);
 	}
