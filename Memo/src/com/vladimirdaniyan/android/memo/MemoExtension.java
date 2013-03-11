@@ -32,26 +32,38 @@ public class MemoExtension extends DashClockExtension {
 	protected void onUpdateData(int reason) {
 		final Intent addMemoIntent = getAddMemoIntent();
 
+		publishUpdate(new ExtensionData().visible(true)
+				.icon(R.drawable.ic_stat_memo).status("Add Memo")
+				.expandedTitle("Most Recent Memo").expandedBody(getMemoText())
+				.clickIntent(addMemoIntent));
+
+	}
+
+	private String getMemoText() {
+
 		DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, "memo-db",
 				null);
 		db = helper.getReadableDatabase();
+
 		daoMaster = new DaoMaster(db);
 		daoSession = daoMaster.newSession();
 		memoDao = daoSession.getNoteDao();
 
 		cursor = db.query(memoDao.getTablename(), memoDao.getAllColumns(),
 				null, null, null, null, null);
+
 		cursor.moveToLast();
-		
-		memo = memoDao.readEntity(cursor, 0);
 
-		String memoText = null;
-		memoText = memo.getText();
+		String memoText = "";
 
-		publishUpdate(new ExtensionData().visible(true)
-				.icon(R.drawable.ic_stat_memo).status("Add Memo")
-				.expandedTitle("Most Recent Memo").expandedBody(memoText)
-				.clickIntent(addMemoIntent));
+		if (cursor.getCount() > 0) {
+			memo = memoDao.readEntity(cursor, 0);
+			memoText = memo.getText();
+		} else {
+			memoText = (String) getText(R.string.no_memos_yet);
+		}
+
+		return memoText;
 
 	}
 
