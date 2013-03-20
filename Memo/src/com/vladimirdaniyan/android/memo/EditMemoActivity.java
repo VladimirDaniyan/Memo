@@ -2,7 +2,6 @@ package com.vladimirdaniyan.android.memo;
 
 import java.util.Calendar;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.NotificationManager;
@@ -17,10 +16,12 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
+import android.widget.Spinner;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
@@ -36,14 +37,14 @@ public class EditMemoActivity extends Activity implements OnClickListener {
 	private static int MEMO_ID = 0;
 
 	private EditText editText;
-	private RadioButton radioUntimed;
-	private RadioButton radioTimed;
 
 	private DaoMaster daoMaster;
 	private DaoSession daoSession;
 	private NoteDao memoDao;
 	private SQLiteDatabase db;
 	private Long mRowId;
+	protected boolean boolBasicNotif = false;
+	protected boolean boolTimedNotif = false;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -65,13 +66,52 @@ public class EditMemoActivity extends Activity implements OnClickListener {
 			}
 		}
 
+		Spinner spinner = (Spinner) findViewById(R.id.spinner1);
+		ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
+				this, R.array.notification_types,
+				android.R.layout.simple_spinner_item);
+		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		spinner.setAdapter(adapter);
+
+		spinner.setOnItemSelectedListener(new OnItemSelectedListener() {
+
+			@Override
+			public void onItemSelected(AdapterView<?> parent, View view,
+					int position, long id) {
+				switch (position) {
+				case 1:
+					boolBasicNotif = true;
+					break;
+				case 2:
+					boolTimedNotif = true;
+					saveMemoText();
+					openTimePickerDialog(false);
+					break;
+				}
+
+			}
+
+			@Override
+			public void onNothingSelected(AdapterView<?> parent) {
+
+			}
+		});
+
 	}
 
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.button_ok:
-			saveMemo();
+			if (boolBasicNotif == true) {
+				saveMemoText();
+				showNotification();
+			} else if (boolTimedNotif == true) {
+				showNotification();
+			} else {
+				saveMemoText();
+				finish();
+			}
 			break;
 		case R.id.button_cancel:
 			finish();
@@ -80,7 +120,8 @@ public class EditMemoActivity extends Activity implements OnClickListener {
 
 	}
 
-	public void saveMemo() {
+	// save the text that was entered
+	public void saveMemoText() {
 		DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, "memo-db",
 				null);
 		db = helper.getWritableDatabase();
@@ -96,13 +137,8 @@ public class EditMemoActivity extends Activity implements OnClickListener {
 		}
 
 		Note memo = new Note(mRowId, memoText, null, null);
-
 		memo.setId(mRowId);
 		memoDao.insertOrReplace(memo);
-
-		createNotification();
-
-		// finish();
 	}
 
 	OnTimeSetListener OnTimeSetListener = new OnTimeSetListener() {
@@ -148,32 +184,7 @@ public class EditMemoActivity extends Activity implements OnClickListener {
 		}
 	};
 
-	
-
-	// Create notification without timer
-	@SuppressLint("NewApi")
-	private void createNotification() {
-
-		RadioGroup radioGroup = (RadioGroup) findViewById(R.id.radioGroup1);
-		int checked = radioGroup.getCheckedRadioButtonId();
-		// radioUntimed = (RadioButton) findViewById(R.id.radio_basic);
-		// radioTimed = (RadioButton) findViewById(R.id.radio_timed);
-
-		switch (checked) {
-		case R.id.radio_basic:
-			showNotification();
-			finish();
-			break;
-		case R.id.radio_timed:
-			openTimePickerDialog(false);
-			break;
-		default:
-			finish();
-			break;
-		}
-
-	}
-
+	// show the notification if applicable
 	private void showNotification() {
 		NotificationCompat.Builder builder = new NotificationCompat.Builder(
 				this).setSmallIcon(R.drawable.ic_stat_memo)
@@ -193,8 +204,9 @@ public class EditMemoActivity extends Activity implements OnClickListener {
 
 		NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 		nm.notify((int) (MEMO_ID + mRowId), builder.build());
-		
-		
+
+		finish();
+
 	}
 
 	private void openTimePickerDialog(boolean is24r) {
@@ -205,39 +217,38 @@ public class EditMemoActivity extends Activity implements OnClickListener {
 				calendar.get(Calendar.MINUTE), is24r);
 		timePickerDialog.setTitle("When do you want to be reminded?");
 		timePickerDialog.show();
-		
-		showNotification();
 	}
+
 	// show alarm as "alarm set for x days x hours and x minutes"
-		static String formatText(Context context, long timeInMillis) {
-			long delta = timeInMillis - System.currentTimeMillis();
-			long hours = delta / (1000 * 60 * 60);
-			long minutes = delta / (1000 * 60) % 60;
-			long days = hours / 24;
-			hours = hours % 24;
+	static String formatText(Context context, long timeInMillis) {
+		long delta = timeInMillis - System.currentTimeMillis();
+		long hours = delta / (1000 * 60 * 60);
+		long minutes = delta / (1000 * 60) % 60;
+		long days = hours / 24;
+		hours = hours % 24;
 
-			String daySeq = (days == 0) ? "" : (days == 1) ? context
-					.getString(R.string.day) : context.getString(R.string.days,
-					Long.toString(days));
+		String daySeq = (days == 0) ? "" : (days == 1) ? context
+				.getString(R.string.day) : context.getString(R.string.days,
+				Long.toString(days));
 
-			String minSeq = (minutes == 0) ? "" : (minutes == 1) ? context
-					.getString(R.string.minute) : context.getString(
-					R.string.minutes, Long.toString(minutes));
+		String minSeq = (minutes == 0) ? "" : (minutes == 1) ? context
+				.getString(R.string.minute) : context.getString(
+				R.string.minutes, Long.toString(minutes));
 
-			String hourSeq = (hours == 0) ? "" : (hours == 1) ? context
-					.getString(R.string.hour) : context.getString(R.string.hours,
-					Long.toString(hours));
+		String hourSeq = (hours == 0) ? "" : (hours == 1) ? context
+				.getString(R.string.hour) : context.getString(R.string.hours,
+				Long.toString(hours));
 
-			boolean dispDays = days > 0;
-			boolean dispHour = hours > 0;
-			boolean dispMinute = minutes > 0;
+		boolean dispDays = days > 0;
+		boolean dispHour = hours > 0;
+		boolean dispMinute = minutes > 0;
 
-			int index = (dispDays ? 1 : 0) | (dispHour ? 2 : 0)
-					| (dispMinute ? 4 : 0);
+		int index = (dispDays ? 1 : 0) | (dispHour ? 2 : 0)
+				| (dispMinute ? 4 : 0);
 
-			String[] formats = context.getResources().getStringArray(
-					R.array.alarm_set);
-			return String.format(formats[index], daySeq, hourSeq, minSeq);
-		}
+		String[] formats = context.getResources().getStringArray(
+				R.array.alarm_set);
+		return String.format(formats[index], daySeq, hourSeq, minSeq);
+	}
 
 }

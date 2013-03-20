@@ -11,43 +11,30 @@
         android:layout_centerHorizontal="true"
         android:layout_margin="@dimen/activity_horizontal_margin"
         android:ems="10"
-        android:height="96dp"
         android:hint="@string/enter_text_hint"
         android:imeOptions="actionDone"
-        android:inputType="textMultiLine" >
+        android:inputType="textMultiLine"
+        android:lines="3" >
 
         <requestFocus />
     </EditText>
 
-    <RadioGroup
-        android:id="@+id/radioGroup1"
-        android:layout_width="wrap_content"
+    <Spinner
+        android:id="@+id/spinner1"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/edit_text_memo"
-        android:layout_alignRight="@+id/edit_text_memo"
         android:layout_below="@+id/edit_text_memo"
-        android:layout_marginBottom="@dimen/activity_horizontal_margin" >
-
-        <RadioButton
-            android:id="@+id/radio_basic"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/radio_basic_notif" />
-
-        <RadioButton
-            android:id="@+id/radio_timed"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/radio_timed_reminder" />
-    </RadioGroup>
+        android:layout_marginBottom="16dp"
+        android:layout_marginRight="16dp"
+        android:entries="@array/notification_types" />
 
     <LinearLayout
-        android:layout_width="match_parent"
         style="?android:attr/buttonBarStyle"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/radioGroup1"
-        android:layout_alignRight="@+id/edit_text_memo"
-        android:layout_below="@+id/radioGroup1" >
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/spinner1" >
 
         <Button
             android:id="@+id/button_cancel"

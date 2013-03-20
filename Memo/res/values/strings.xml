@@ -15,6 +15,12 @@
     <string name="radio_basic_notif">Create notification</string>
     <string name="radio_timed_reminder">Create notification with timer</string>
 
+    <string-array name="notification_types">
+        <item >No Notificaiton</item>
+        <item >Basic Notification</item>
+        <item >Timed Notification</item>
+    </string-array>
+
     <!-- Alarm confirmation toast: singular day -->
     <string name="day">"1 day"</string>
 
