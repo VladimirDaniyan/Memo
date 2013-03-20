@@ -1,9 +1,14 @@
 package com.vladimirdaniyan.android.memo;
 
+import java.util.Calendar;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.TimePickerDialog;
+import android.app.TimePickerDialog.OnTimeSetListener;
 import android.content.Context;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
@@ -11,9 +16,12 @@ import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.azazeleleven.android.memo.DaoMaster;
@@ -22,9 +30,15 @@ import com.azazeleleven.android.memo.DaoSession;
 import com.azazeleleven.android.memo.Note;
 import com.azazeleleven.android.memo.NoteDao;
 
-public class EditMemoActivity extends Activity {
+public class EditMemoActivity extends Activity implements OnClickListener {
+
+	protected static final int REQ_1 = 1;
+	private static int MEMO_ID = 0;
 
 	private EditText editText;
+	private RadioButton radioUntimed;
+	private RadioButton radioTimed;
+
 	private DaoMaster daoMaster;
 	private DaoSession daoSession;
 	private NoteDao memoDao;
@@ -38,14 +52,9 @@ public class EditMemoActivity extends Activity {
 
 		editText = (EditText) findViewById(R.id.edit_text_memo);
 		Button ok = (Button) findViewById(R.id.button_ok);
-		ok.setOnClickListener(new View.OnClickListener() {
-
-			@Override
-			public void onClick(View view) {
-				saveMemo();
-
-			}
-		});
+		Button cancel = (Button) findViewById(R.id.button_cancel);
+		ok.setOnClickListener(this);
+		cancel.setOnClickListener(this);
 
 		Bundle extras = getIntent().getExtras();
 		if (extras != null) {
@@ -54,6 +63,19 @@ public class EditMemoActivity extends Activity {
 			if (memoText != null) {
 				editText.setText(memoText);
 			}
+		}
+
+	}
+
+	@Override
+	public void onClick(View v) {
+		switch (v.getId()) {
+		case R.id.button_ok:
+			saveMemo();
+			break;
+		case R.id.button_cancel:
+			finish();
+			break;
 		}
 
 	}
@@ -78,44 +100,144 @@ public class EditMemoActivity extends Activity {
 		memo.setId(mRowId);
 		memoDao.insertOrReplace(memo);
 
-		showMemoNotification();
+		createNotification();
 
-		finish();
+		// finish();
 	}
 
+	OnTimeSetListener OnTimeSetListener = new OnTimeSetListener() {
+
+		@Override
+		public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+
+			// Get time right now
+			Calendar cal = Calendar.getInstance();
+			cal.setTimeInMillis(System.currentTimeMillis());
+
+			int hourNow = cal.get(Calendar.HOUR_OF_DAY);
+			int minuteNow = cal.get(Calendar.MINUTE);
+
+			// advance alarm by one day if behind current time
+			if (hourOfDay < hourNow || hourOfDay == hourNow
+					&& minute == minuteNow) {
+				cal.add(Calendar.DAY_OF_YEAR, 1);
+			}
+			cal.set(Calendar.HOUR_OF_DAY, hourOfDay);
+			cal.set(Calendar.MINUTE, minute);
+			cal.set(Calendar.SECOND, 0);
+			cal.set(Calendar.MILLISECOND, 0);
+
+			setAlarm(cal);
+
+		}
+
+		// set timer and send information to BroadcastReciever
+		private void setAlarm(Calendar cal) {
+			Intent intent = new Intent(getBaseContext(), TimerReceiver.class);
+			intent.putExtra("alarm_time",
+					formatText(getBaseContext(), cal.getTimeInMillis()));
+			intent.putExtra("memoText", editText.getText().toString());
+			intent.putExtra("mRowId", mRowId);
+
+			PendingIntent pendingIntent = PendingIntent.getBroadcast(
+					getBaseContext(), REQ_1, intent, 0);
+			AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+			alarmManager.set(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(),
+					pendingIntent);
+
+		}
+	};
+
+	
+
+	// Create notification without timer
 	@SuppressLint("NewApi")
-	private void showMemoNotification() {
-		final CheckBox checkBox = (CheckBox) findViewById(R.id.checkbox_add_to_notification);
-		if (checkBox.isChecked()) {
-			NotificationCompat.Builder builder = new NotificationCompat.Builder(
-					this).setSmallIcon(R.drawable.ic_stat_memo)
-					.setContentTitle(editText.getText().toString())
-					.setContentText("memo");
+	private void createNotification() {
 
-			// create intent for edit action when notification is clicked
-			Intent resultIntent = new Intent(this, ListMemoActivity.class);
+		RadioGroup radioGroup = (RadioGroup) findViewById(R.id.radioGroup1);
+		int checked = radioGroup.getCheckedRadioButtonId();
+		// radioUntimed = (RadioButton) findViewById(R.id.radio_basic);
+		// radioTimed = (RadioButton) findViewById(R.id.radio_timed);
 
-			// artificial back stack for started activity
-			TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-			// Intent to start Activity at the top of the stack
-			stackBuilder.addNextIntent(resultIntent);
-			PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(
-					0, PendingIntent.FLAG_UPDATE_CURRENT);
-			builder.setContentIntent(resultPendingIntent);
-
-			NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-			int mNotificationId = 001;
-			nm.notify(mNotificationId, builder.build());
+		switch (checked) {
+		case R.id.radio_basic:
+			showNotification();
 			finish();
-		} else {
+			break;
+		case R.id.radio_timed:
+			openTimePickerDialog(false);
+			break;
+		default:
 			finish();
+			break;
 		}
 
 	}
 
-	public void cancelMemo(View view) {
-		finish();
+	private void showNotification() {
+		NotificationCompat.Builder builder = new NotificationCompat.Builder(
+				this).setSmallIcon(R.drawable.ic_stat_memo)
+				.setContentTitle(editText.getText().toString())
+				.setContentText("memo");
 
+		// create intent for edit action when notification is clicked
+		Intent resultIntent = new Intent(this, ListMemoActivity.class);
+
+		// artificial back stack for started activity
+		TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+		// Intent to start Activity at the top of the stack
+		stackBuilder.addNextIntent(resultIntent);
+		PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(
+				MEMO_ID, PendingIntent.FLAG_UPDATE_CURRENT);
+		builder.setContentIntent(resultPendingIntent);
+
+		NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+		nm.notify((int) (MEMO_ID + mRowId), builder.build());
+		
+		
 	}
+
+	private void openTimePickerDialog(boolean is24r) {
+		Calendar calendar = Calendar.getInstance();
+
+		TimePickerDialog timePickerDialog = new TimePickerDialog(this,
+				OnTimeSetListener, calendar.get(Calendar.HOUR_OF_DAY),
+				calendar.get(Calendar.MINUTE), is24r);
+		timePickerDialog.setTitle("When do you want to be reminded?");
+		timePickerDialog.show();
+		
+		showNotification();
+	}
+	// show alarm as "alarm set for x days x hours and x minutes"
+		static String formatText(Context context, long timeInMillis) {
+			long delta = timeInMillis - System.currentTimeMillis();
+			long hours = delta / (1000 * 60 * 60);
+			long minutes = delta / (1000 * 60) % 60;
+			long days = hours / 24;
+			hours = hours % 24;
+
+			String daySeq = (days == 0) ? "" : (days == 1) ? context
+					.getString(R.string.day) : context.getString(R.string.days,
+					Long.toString(days));
+
+			String minSeq = (minutes == 0) ? "" : (minutes == 1) ? context
+					.getString(R.string.minute) : context.getString(
+					R.string.minutes, Long.toString(minutes));
+
+			String hourSeq = (hours == 0) ? "" : (hours == 1) ? context
+					.getString(R.string.hour) : context.getString(R.string.hours,
+					Long.toString(hours));
+
+			boolean dispDays = days > 0;
+			boolean dispHour = hours > 0;
+			boolean dispMinute = minutes > 0;
+
+			int index = (dispDays ? 1 : 0) | (dispHour ? 2 : 0)
+					| (dispMinute ? 4 : 0);
+
+			String[] formats = context.getResources().getStringArray(
+					R.array.alarm_set);
+			return String.format(formats[index], daySeq, hourSeq, minSeq);
+		}
 
 }

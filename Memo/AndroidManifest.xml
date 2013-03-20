@@ -27,7 +27,6 @@
             android:name="com.vladimirdaniyan.android.memo.EditMemoActivity"
             android:label="@string/title_activity_edit_memo"
             android:parentActivityName="com.vladimirdaniyan.android.memo.ListMemoActivity"
-            android:theme="@android:style/Theme.Holo.Light.Dialog" 
             android:exported="true">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
