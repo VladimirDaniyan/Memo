@@ -22,6 +22,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
@@ -31,18 +32,25 @@ import com.azazeleleven.android.memo.DaoSession;
 import com.azazeleleven.android.memo.Note;
 import com.azazeleleven.android.memo.NoteDao;
 
-public class EditMemoActivity extends Activity implements OnClickListener {
+public class EditMemoActivity extends Activity implements OnClickListener,
+		OnTimeSetListener {
 
-	protected static final int REQ_1 = 1;
 	private static int MEMO_ID = 0;
+	private static final int ALARM_REQ = 1;
+
+	TimePicker myTimePicker;
+	TimePickerDialog timePickerDialog;
 
 	private EditText editText;
+	private String memoText;
+	private TextView textAlarm;
 
 	private DaoMaster daoMaster;
 	private DaoSession daoSession;
 	private NoteDao memoDao;
 	private SQLiteDatabase db;
 	private Long mRowId;
+
 	protected boolean boolBasicNotif = false;
 	protected boolean boolTimedNotif = false;
 
@@ -51,6 +59,7 @@ public class EditMemoActivity extends Activity implements OnClickListener {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_edit_memo);
 
+		textAlarm = (TextView) findViewById(R.id.textView1);
 		editText = (EditText) findViewById(R.id.edit_text_memo);
 		Button ok = (Button) findViewById(R.id.button_ok);
 		Button cancel = (Button) findViewById(R.id.button_cancel);
@@ -85,6 +94,7 @@ public class EditMemoActivity extends Activity implements OnClickListener {
 				case 2:
 					boolTimedNotif = true;
 					saveMemoText();
+					textAlarm.setText("");
 					openTimePickerDialog(false);
 					break;
 				}
@@ -99,6 +109,16 @@ public class EditMemoActivity extends Activity implements OnClickListener {
 
 	}
 
+	private void openTimePickerDialog(boolean is24HourView) {
+		Calendar calendar = Calendar.getInstance();
+
+		timePickerDialog = new TimePickerDialog(this, (OnTimeSetListener) this,
+				calendar.get(Calendar.HOUR_OF_DAY),
+				calendar.get(Calendar.MINUTE), is24HourView);
+		timePickerDialog.show();
+
+	}
+
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
@@ -107,7 +127,7 @@ public class EditMemoActivity extends Activity implements OnClickListener {
 				saveMemoText();
 				showNotification();
 			} else if (boolTimedNotif == true) {
-				showNotification();
+				finish();
 			} else {
 				saveMemoText();
 				finish();
@@ -129,7 +149,7 @@ public class EditMemoActivity extends Activity implements OnClickListener {
 		daoSession = daoMaster.newSession();
 		memoDao = daoSession.getNoteDao();
 
-		String memoText = editText.getText().toString();
+		memoText = editText.getText().toString();
 		if (memoText.matches("")) {
 			Toast.makeText(this, R.string.toast_input_required,
 					Toast.LENGTH_SHORT).show();
@@ -140,49 +160,6 @@ public class EditMemoActivity extends Activity implements OnClickListener {
 		memo.setId(mRowId);
 		memoDao.insertOrReplace(memo);
 	}
-
-	OnTimeSetListener OnTimeSetListener = new OnTimeSetListener() {
-
-		@Override
-		public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-
-			// Get time right now
-			Calendar cal = Calendar.getInstance();
-			cal.setTimeInMillis(System.currentTimeMillis());
-
-			int hourNow = cal.get(Calendar.HOUR_OF_DAY);
-			int minuteNow = cal.get(Calendar.MINUTE);
-
-			// advance alarm by one day if behind current time
-			if (hourOfDay < hourNow || hourOfDay == hourNow
-					&& minute == minuteNow) {
-				cal.add(Calendar.DAY_OF_YEAR, 1);
-			}
-			cal.set(Calendar.HOUR_OF_DAY, hourOfDay);
-			cal.set(Calendar.MINUTE, minute);
-			cal.set(Calendar.SECOND, 0);
-			cal.set(Calendar.MILLISECOND, 0);
-
-			setAlarm(cal);
-
-		}
-
-		// set timer and send information to BroadcastReciever
-		private void setAlarm(Calendar cal) {
-			Intent intent = new Intent(getBaseContext(), TimerReceiver.class);
-			intent.putExtra("alarm_time",
-					formatText(getBaseContext(), cal.getTimeInMillis()));
-			intent.putExtra("memoText", editText.getText().toString());
-			intent.putExtra("mRowId", mRowId);
-
-			PendingIntent pendingIntent = PendingIntent.getBroadcast(
-					getBaseContext(), REQ_1, intent, 0);
-			AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-			alarmManager.set(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(),
-					pendingIntent);
-
-		}
-	};
 
 	// show the notification if applicable
 	private void showNotification() {
@@ -209,46 +186,38 @@ public class EditMemoActivity extends Activity implements OnClickListener {
 
 	}
 
-	private void openTimePickerDialog(boolean is24r) {
-		Calendar calendar = Calendar.getInstance();
+	@Override
+	public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+		// Get time right now
+		Calendar cal = Calendar.getInstance();
+		cal.setTimeInMillis(System.currentTimeMillis());
 
-		TimePickerDialog timePickerDialog = new TimePickerDialog(this,
-				OnTimeSetListener, calendar.get(Calendar.HOUR_OF_DAY),
-				calendar.get(Calendar.MINUTE), is24r);
-		timePickerDialog.setTitle("When do you want to be reminded?");
-		timePickerDialog.show();
+		int hourNow = cal.get(Calendar.HOUR_OF_DAY);
+		int minuteNow = cal.get(Calendar.MINUTE);
+
+		// advance alarm by one day if behind current time
+		if (hourOfDay < hourNow || hourOfDay == hourNow && minute == minuteNow) {
+			cal.add(Calendar.DAY_OF_YEAR, 1);
+		}
+		cal.set(Calendar.HOUR_OF_DAY, hourOfDay);
+		cal.set(Calendar.MINUTE, minute);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+
+		setAlarm(cal);
+
 	}
 
-	// show alarm as "alarm set for x days x hours and x minutes"
-	static String formatText(Context context, long timeInMillis) {
-		long delta = timeInMillis - System.currentTimeMillis();
-		long hours = delta / (1000 * 60 * 60);
-		long minutes = delta / (1000 * 60) % 60;
-		long days = hours / 24;
-		hours = hours % 24;
+	private void setAlarm(Calendar cal) {
+		textAlarm.setText(FormatAlarmText.formatText(this, cal.getTimeInMillis()));
+		
+		Intent intent = new Intent(this, TimerReceiver.class);
+		PendingIntent pendingIntent = PendingIntent.getBroadcast(this,
+				ALARM_REQ, intent, 0);
+		AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+		alarmManager.set(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(),
+				pendingIntent);
 
-		String daySeq = (days == 0) ? "" : (days == 1) ? context
-				.getString(R.string.day) : context.getString(R.string.days,
-				Long.toString(days));
-
-		String minSeq = (minutes == 0) ? "" : (minutes == 1) ? context
-				.getString(R.string.minute) : context.getString(
-				R.string.minutes, Long.toString(minutes));
-
-		String hourSeq = (hours == 0) ? "" : (hours == 1) ? context
-				.getString(R.string.hour) : context.getString(R.string.hours,
-				Long.toString(hours));
-
-		boolean dispDays = days > 0;
-		boolean dispHour = hours > 0;
-		boolean dispMinute = minutes > 0;
-
-		int index = (dispDays ? 1 : 0) | (dispHour ? 2 : 0)
-				| (dispMinute ? 4 : 0);
-
-		String[] formats = context.getResources().getStringArray(
-				R.array.alarm_set);
-		return String.format(formats[index], daySeq, hourSeq, minSeq);
 	}
 
 }

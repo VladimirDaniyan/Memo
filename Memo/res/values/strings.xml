@@ -1,57 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
+    
+    <!-- Activity names -->
     <string name="app_name">Memo</string>
-    <string name="extension_title">Quick Memo</string>
-    <string name="extension_description">Adds a quick memo to your notification bar</string>
+    <string name="title_activity_edit_memo">Add Memo</string>
     <string name="title_activity_main">Memo</string>
+    <string name="title_activity_Timer">When do you want to be reminded</string>
+    
     <string name="add_new_note">Add Note</string>
     <string name="menu_delete">Delete</string>
-    <string name="title_activity_edit_memo">Add Memo</string>
     <string name="create_notification">Create Notification</string>
     <string name="toast_input_required">You did not enter any text</string>
     <string name="enter_text_hint">Add a new memo</string>
     <string name="no_memos_yet">no memos yet, tap to add</string>
     <string name="radio_basic_notif">Create notification</string>
     <string name="radio_timed_reminder">Create notification with timer</string>
+    
+
+    <!-- DaschClock Extension -->
+    <string name="extension_title">Quick Memo</string>
+    <string name="extension_description">Adds a quick memo to your notification bar</string>
 
     <string-array name="notification_types">
-        <item >No Notificaiton</item>
-        <item >Basic Notification</item>
-        <item >Timed Notification</item>
+        <item>No Notificaiton</item>
+        <item>Basic Notification</item>
+        <item>Timed Notification</item>
     </string-array>
 
-    <!-- Alarm confirmation toast: singular day -->
+    <!-- Reminder confirmation toast: singular day -->
     <string name="day">"1 day"</string>
 
-    <!-- Alarm confirmation toast: plural days -->
+    <!-- Reminder confirmation toast: plural days -->
     <string name="days">"<xliff:g id="days">%s</xliff:g> days"</string>
 
-    <!-- Alarm confirmation toast: singular hour -->
+    <!-- Reminder confirmation toast: singular hour -->
     <string name="hour">1 hour</string>
 
-    <!-- Alarm confirmation toast: plural hours -->
+    <!-- Reminder confirmation toast: plural hours -->
     <string name="hours"><xliff:g id="hours">%s</xliff:g> hours</string>
 
-    <!-- Alarm confirmation toast: singular minute -->
+    <!-- Reminder confirmation toast: singular minute -->
     <string name="minute">"1 minute"</string>
 
-    <!-- Alarm confirmation toast: plural minutes -->
+    <!-- Reminder confirmation toast: plural minutes -->
     <string name="minutes">"<xliff:g id="minutes">%s</xliff:g> minutes"</string>
 
     <!--
-          Alarm confirmation toast: Describes how long from now until
+          Reminder confirmation toast: Describes how long from now until
          alarm fires
     -->
     <string-array name="alarm_set">
-        <item>Alarm set for less than 1 minute from now.</item>
-        <item>Alarm set for <xliff:g id="DAYS" example="2 days">%1$s</xliff:g> from now.</item>
-        <item>Alarm set for <xliff:g id="HOURS" example="2 hours">%2$s</xliff:g> from now.</item>
-        <item>Alarm set for <xliff:g id="DAYS" example="2 days">%1$s</xliff:g> and <xliff:g id="HOURS" example="2 hours">%2$s</xliff:g> from now.</item>
-        <item>Alarm set for <xliff:g id="MINUTES" example="2 minutes">%3$s</xliff:g> from now.</item>
-        <item>Alarm set for <xliff:g id="DAYS" example="2 days">%1$s</xliff:g> and <xliff:g id="MINUTES" example="2 minutes">%3$s</xliff:g> from now.</item>
-        <item>Alarm set for <xliff:g id="HOURS" example="2 hours">%2$s</xliff:g> and <xliff:g id="MINUTES" example="2 minutes">%3$s</xliff:g> from now.</item>
-        <item>Alarm set for <xliff:g id="DAYS" example="2 days">%1$s</xliff:g>, <xliff:g id="HOURS" example="2 hours">%2$s</xliff:g>, and <xliff:g id="MINUTES" example="2 minutes">%3$s</xliff:g> from now.</item>
+        <item>Reminder set for less than 1 minute from now.</item>
+        <item>Reminder set for <xliff:g id="DAYS" example="2 days">%1$s</xliff:g> from now.</item>
+        <item>Reminder set for <xliff:g id="HOURS" example="2 hours">%2$s</xliff:g> from now.</item>
+        <item>Reminder set for <xliff:g id="DAYS" example="2 days">%1$s</xliff:g> and <xliff:g id="HOURS" example="2 hours">%2$s</xliff:g> from now.</item>
+        <item>Reminder set for <xliff:g id="MINUTES" example="2 minutes">%3$s</xliff:g> from now.</item>
+        <item>Reminder set for <xliff:g id="DAYS" example="2 days">%1$s</xliff:g> and <xliff:g id="MINUTES" example="2 minutes">%3$s</xliff:g> from now.</item>
+        <item>Reminder set for <xliff:g id="HOURS" example="2 hours">%2$s</xliff:g> and <xliff:g id="MINUTES" example="2 minutes">%3$s</xliff:g> from now.</item>
+        <item>Reminder set for <xliff:g id="DAYS" example="2 days">%1$s</xliff:g>, <xliff:g id="HOURS" example="2 hours">%2$s</xliff:g>, and <xliff:g id="MINUTES" example="2 minutes">%3$s</xliff:g> from now.</item>
     </string-array>
 
 </resources>
