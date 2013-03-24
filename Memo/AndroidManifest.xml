@@ -32,6 +32,9 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.azazeleleven.android.memo.MainActivity" />
         </activity>
+        
+        <receiver android:name="com.vladimirdaniyan.android.memo.TimerReceiver"
+            android:process=":remote" ></receiver>
 
         <service
             android:name="com.vladimirdaniyan.android.memo.MemoExtension"

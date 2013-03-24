@@ -14,6 +14,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
+import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -22,7 +24,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
@@ -31,35 +32,37 @@ import com.azazeleleven.android.memo.DaoMaster.DevOpenHelper;
 import com.azazeleleven.android.memo.DaoSession;
 import com.azazeleleven.android.memo.Note;
 import com.azazeleleven.android.memo.NoteDao;
+import com.google.common.primitives.Ints;
+
+import de.keyboardsurfer.android.widget.crouton.Crouton;
+import de.keyboardsurfer.android.widget.crouton.Style;
 
 public class EditMemoActivity extends Activity implements OnClickListener,
 		OnTimeSetListener {
-
-	private static int MEMO_ID = 0;
-	private static final int ALARM_REQ = 1;
 
 	TimePicker myTimePicker;
 	TimePickerDialog timePickerDialog;
 
 	private EditText editText;
 	private String memoText;
-	private TextView textAlarm;
+	private String reminderTime;
 
 	private DaoMaster daoMaster;
 	private DaoSession daoSession;
 	private NoteDao memoDao;
 	private SQLiteDatabase db;
 	private Long mRowId;
+	private int notifId;
 
 	protected boolean boolBasicNotif = false;
 	protected boolean boolTimedNotif = false;
+
+	private Calendar newCal;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_edit_memo);
-
-		textAlarm = (TextView) findViewById(R.id.textView1);
 		editText = (EditText) findViewById(R.id.edit_text_memo);
 		Button ok = (Button) findViewById(R.id.button_ok);
 		Button cancel = (Button) findViewById(R.id.button_cancel);
@@ -70,8 +73,9 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 		if (extras != null) {
 			String memoText = extras.getString("memoText");
 			mRowId = extras.getLong("mRowId");
-			if (memoText != null) {
+			if (memoText != null && mRowId != null) {
 				editText.setText(memoText);
+				notifId = Ints.checkedCast(mRowId);
 			}
 		}
 
@@ -93,8 +97,6 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 					break;
 				case 2:
 					boolTimedNotif = true;
-					saveMemoText();
-					textAlarm.setText("");
 					openTimePickerDialog(false);
 					break;
 				}
@@ -127,6 +129,8 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 				saveMemoText();
 				showNotification();
 			} else if (boolTimedNotif == true) {
+				saveMemoText();
+				setAlarm(newCal);
 				finish();
 			} else {
 				saveMemoText();
@@ -159,28 +163,34 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 		Note memo = new Note(mRowId, memoText, null, null);
 		memo.setId(mRowId);
 		memoDao.insertOrReplace(memo);
+
 	}
 
 	// show the notification if applicable
 	private void showNotification() {
+
 		NotificationCompat.Builder builder = new NotificationCompat.Builder(
 				this).setSmallIcon(R.drawable.ic_stat_memo)
-				.setContentTitle(editText.getText().toString())
-				.setContentText("memo");
+				.setContentTitle("memo").setContentText(memoText);
+
+		NotificationCompat.BigTextStyle bigTextStyle = new NotificationCompat.BigTextStyle();
+		bigTextStyle.setBigContentTitle("memo").bigText(memoText);
+		builder.setStyle(bigTextStyle);
 
 		// create intent for edit action when notification is clicked
 		Intent resultIntent = new Intent(this, ListMemoActivity.class);
 
 		// artificial back stack for started activity
 		TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+
 		// Intent to start Activity at the top of the stack
 		stackBuilder.addNextIntent(resultIntent);
-		PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(
-				MEMO_ID, PendingIntent.FLAG_UPDATE_CURRENT);
+		PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0,
+				PendingIntent.FLAG_UPDATE_CURRENT);
 		builder.setContentIntent(resultPendingIntent);
 
 		NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-		nm.notify((int) (MEMO_ID + mRowId), builder.build());
+		nm.notify(notifId, builder.build());
 
 		finish();
 
@@ -189,35 +199,51 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 	@Override
 	public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
 		// Get time right now
-		Calendar cal = Calendar.getInstance();
-		cal.setTimeInMillis(System.currentTimeMillis());
+		newCal = Calendar.getInstance();
+		newCal.setTimeInMillis(System.currentTimeMillis());
 
-		int hourNow = cal.get(Calendar.HOUR_OF_DAY);
-		int minuteNow = cal.get(Calendar.MINUTE);
+		int hourNow = newCal.get(Calendar.HOUR_OF_DAY);
+		int minuteNow = newCal.get(Calendar.MINUTE);
 
 		// advance alarm by one day if behind current time
 		if (hourOfDay < hourNow || hourOfDay == hourNow && minute == minuteNow) {
-			cal.add(Calendar.DAY_OF_YEAR, 1);
+			newCal.add(Calendar.DAY_OF_YEAR, 1);
 		}
-		cal.set(Calendar.HOUR_OF_DAY, hourOfDay);
-		cal.set(Calendar.MINUTE, minute);
-		cal.set(Calendar.SECOND, 0);
-		cal.set(Calendar.MILLISECOND, 0);
+		newCal.set(Calendar.HOUR_OF_DAY, hourOfDay);
+		newCal.set(Calendar.MINUTE, minute);
+		newCal.set(Calendar.SECOND, 0);
+		newCal.set(Calendar.MILLISECOND, 0);
 
-		setAlarm(cal);
+		Crouton.makeText(this,
+				FormatAlarmText.formatText(this, newCal.getTimeInMillis()),
+				Style.INFO, R.id.alternate_view_group).show();
 
 	}
 
-	private void setAlarm(Calendar cal) {
-		textAlarm.setText(FormatAlarmText.formatText(this, cal.getTimeInMillis()));
-		
-		Intent intent = new Intent(this, TimerReceiver.class);
-		PendingIntent pendingIntent = PendingIntent.getBroadcast(this,
-				ALARM_REQ, intent, 0);
+	private void setAlarm(Calendar targetCal) {
+
+		reminderTime = (String) DateFormat.format("hh:mm aaa",
+				targetCal.getTime());
+
+		Intent alarmIntent = new Intent(getBaseContext(), TimerReceiver.class);
+		alarmIntent.putExtra("memoText", memoText);
+		alarmIntent.putExtra("reminder_time", reminderTime);
+		alarmIntent.putExtra("mRowId", mRowId);
+
+		Log.d("PRE ALARM TEXT", memoText);
+
+		PendingIntent pendingIntent = PendingIntent.getBroadcast(
+				getBaseContext(), notifId, alarmIntent, 0);
 		AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-		alarmManager.set(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(),
+		alarmManager.set(AlarmManager.RTC_WAKEUP, targetCal.getTimeInMillis(),
 				pendingIntent);
 
+	}
+
+	@Override
+	protected void onDestroy() {
+		Crouton.cancelAllCroutons();
+		super.onDestroy();
 	}
 
 }

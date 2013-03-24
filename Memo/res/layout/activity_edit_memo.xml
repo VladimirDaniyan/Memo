@@ -12,8 +12,6 @@
         android:layout_margin="@dimen/activity_horizontal_margin"
         android:ems="10"
         android:hint="@string/enter_text_hint"
-        android:imeOptions="actionDone"
-        android:inputType="textMultiLine"
         android:lines="3" >
 
         <requestFocus />
@@ -54,13 +52,15 @@
             android:text="@android:string/ok" />
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/textView1"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/alternate_view_group"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/linearLayout1"
         android:layout_centerHorizontal="true"
         android:layout_margin="16dp"
-        android:shadowColor="@android:color/darker_gray" />
+        android:orientation="vertical" >
+
+    </LinearLayout>
 
 </RelativeLayout>
