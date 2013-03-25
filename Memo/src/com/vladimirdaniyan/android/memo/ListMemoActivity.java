@@ -5,8 +5,6 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.view.ContextMenu;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -23,8 +21,6 @@ import de.timroes.swipetodismiss.SwipeDismissList;
 import de.timroes.swipetodismiss.SwipeDismissList.Undoable;
 
 public class ListMemoActivity extends ListActivity {
-
-	private static final int DELETE_ID = Menu.FIRST;
 
 	private DaoMaster daoMaster;
 	private DaoSession daoSession;
@@ -107,13 +103,6 @@ public class ListMemoActivity extends ListActivity {
 	protected void onResume() {
 		cursor.requery();
 		super.onResume();
-	}
-
-	@Override
-	public void onCreateContextMenu(ContextMenu menu, View v,
-			ContextMenuInfo menuInfo) {
-		super.onCreateContextMenu(menu, v, menuInfo);
-		menu.add(0, DELETE_ID, 0, R.string.menu_delete);
 	}
 
 	@Override
