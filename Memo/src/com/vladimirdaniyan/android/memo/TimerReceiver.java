@@ -21,8 +21,6 @@ public class TimerReceiver extends BroadcastReceiver {
 		Long mRowId = alarmIntent.getExtras().getLong("mRowId");
 		
 		Intent resultIntent = new Intent(context, ListMemoActivity.class);
-		resultIntent.putExtra("memoText", memoText);
-		resultIntent.putExtra("mRowId", mRowId);
 
 		PendingIntent resultPendingIntent = PendingIntent.getActivity(context,
 				0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
