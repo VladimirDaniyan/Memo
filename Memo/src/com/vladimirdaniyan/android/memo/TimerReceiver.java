@@ -23,10 +23,7 @@ public class TimerReceiver extends BroadcastReceiver {
 		Intent resultIntent = new Intent(context, ListMemoActivity.class);
 		resultIntent.putExtra("memoText", memoText);
 		resultIntent.putExtra("mRowId", mRowId);
-//		
-//		TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
-//		stackBuilder.addNextIntent(resultIntent);
-//		stackBuilder.addNextIntent(resultIntent);
+
 		PendingIntent resultPendingIntent = PendingIntent.getActivity(context,
 				0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 		
