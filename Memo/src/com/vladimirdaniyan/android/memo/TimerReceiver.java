@@ -1,6 +1,6 @@
 package com.vladimirdaniyan.android.memo;
 
-import com.google.common.primitives.Ints;
+import java.util.Calendar;
 
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -9,7 +9,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.RingtoneManager;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
+
+import com.google.common.primitives.Ints;
 
 public class TimerReceiver extends BroadcastReceiver {
 
@@ -17,27 +18,32 @@ public class TimerReceiver extends BroadcastReceiver {
 	public void onReceive(Context context, Intent alarmIntent) {
 
 		String memoText = alarmIntent.getStringExtra("memoText");
-		String reminderTime = alarmIntent.getStringExtra("reminder_time");
 		Long mRowId = alarmIntent.getExtras().getLong("mRowId");
 		
-		Log.d("POST ALARM TEXT", memoText);
-
+		Intent resultIntent = new Intent(context, ListMemoActivity.class);
+		resultIntent.putExtra("memoText", memoText);
+		resultIntent.putExtra("mRowId", mRowId);
+//		
+//		TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
+//		stackBuilder.addNextIntent(resultIntent);
+//		stackBuilder.addNextIntent(resultIntent);
+		PendingIntent resultPendingIntent = PendingIntent.getActivity(context,
+				0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+		
 		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(
 				context)
 				.setSmallIcon(R.drawable.ic_stat_memo)
-				.setContentTitle("Reminder set for " + reminderTime)
+				.setTicker(memoText)
+				.setWhen(Calendar.getInstance().getTimeInMillis())
+				.setContentTitle("Timed Memo")
 				.setContentText(memoText)
 				.setSound(
 						RingtoneManager
 								.getDefaultUri(RingtoneManager.TYPE_ALARM));
-		NotificationCompat.BigTextStyle bigTextStyle = new NotificationCompat.BigTextStyle();
-		bigTextStyle.setBigContentTitle("Reminder set for " + reminderTime)
-				.bigText(memoText);
-		mBuilder.setStyle(bigTextStyle);
 
-		Intent resultIntent = new Intent(context, EditMemoActivity.class);
-		PendingIntent resultPendingIntent = PendingIntent.getActivity(context,
-				0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+		NotificationCompat.BigTextStyle bigTextStyle = new NotificationCompat.BigTextStyle();
+		bigTextStyle.setBigContentTitle("Timed Memo").bigText(memoText);
+		mBuilder.setStyle(bigTextStyle);
 		mBuilder.setContentIntent(resultPendingIntent);
 
 		NotificationManager mNotificationManager = (NotificationManager) context

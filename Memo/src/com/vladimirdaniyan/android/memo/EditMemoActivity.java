@@ -14,8 +14,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
-import android.text.format.DateFormat;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -45,8 +43,6 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 
 	private EditText editText;
 	private String memoText;
-	private String reminderTime;
-
 	private DaoMaster daoMaster;
 	private DaoSession daoSession;
 	private NoteDao memoDao;
@@ -171,10 +167,10 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 
 		NotificationCompat.Builder builder = new NotificationCompat.Builder(
 				this).setSmallIcon(R.drawable.ic_stat_memo)
-				.setContentTitle("memo").setContentText(memoText);
+				.setContentTitle("Memo").setContentText(memoText);
 
 		NotificationCompat.BigTextStyle bigTextStyle = new NotificationCompat.BigTextStyle();
-		bigTextStyle.setBigContentTitle("memo").bigText(memoText);
+		bigTextStyle.setBigContentTitle("Memo").bigText(memoText);
 		builder.setStyle(bigTextStyle);
 
 		// create intent for edit action when notification is clicked
@@ -222,15 +218,9 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 
 	private void setAlarm(Calendar targetCal) {
 
-		reminderTime = (String) DateFormat.format("hh:mm aaa",
-				targetCal.getTime());
-
 		Intent alarmIntent = new Intent(getBaseContext(), TimerReceiver.class);
 		alarmIntent.putExtra("memoText", memoText);
-		alarmIntent.putExtra("reminder_time", reminderTime);
 		alarmIntent.putExtra("mRowId", mRowId);
-
-		Log.d("PRE ALARM TEXT", memoText);
 
 		PendingIntent pendingIntent = PendingIntent.getBroadcast(
 				getBaseContext(), notifId, alarmIntent, 0);
