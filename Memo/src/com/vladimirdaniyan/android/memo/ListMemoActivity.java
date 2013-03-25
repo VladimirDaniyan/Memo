@@ -10,13 +10,13 @@ import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
 import com.azazeleleven.android.memo.DaoMaster;
 import com.azazeleleven.android.memo.DaoMaster.DevOpenHelper;
 import com.azazeleleven.android.memo.DaoSession;
+import com.azazeleleven.android.memo.Note;
 import com.azazeleleven.android.memo.NoteDao;
 
 import de.timroes.swipetodismiss.SwipeDismissList;
@@ -53,28 +53,53 @@ public class ListMemoActivity extends ListActivity {
 		int[] to = { android.R.id.text1 };
 
 		@SuppressWarnings("deprecation")
-		final
-		SimpleCursorAdapter adapter = new SimpleCursorAdapter(this,
+		final SimpleCursorAdapter adapter = new SimpleCursorAdapter(this,
 				android.R.layout.simple_list_item_2, cursor, from, to);
 		setListAdapter(adapter);
 
 		registerForContextMenu(getListView());
 
-		SwipeDismissList.OnDismissCallback callback = new SwipeDismissList.OnDismissCallback() {
+		new SwipeDismissList(getListView(),
+				new SwipeDismissList.OnDismissCallback() {
 
-			@SuppressWarnings("deprecation")
-			@Override
-			public Undoable onDismiss(ListView listView, int position) {
-				final long itemToDelete = adapter.getItemId(position);
-				memoDao.deleteByKey(itemToDelete);
-				cursor.requery();
-				return null;
-			
-			}
-		};
-		
-		SwipeDismissList swipeList = new SwipeDismissList(getListView(), callback);
-		
+					@SuppressWarnings("deprecation")
+					public Undoable onDismiss(ListView listView,
+							final int position) {
+						cursor.moveToPosition(position);
+						final String itemToDelete = cursor.getString(cursor
+								.getColumnIndexOrThrow("TEXT"));
+						final long deletedItem = adapter.getItemId(position);
+
+						memoDao.deleteByKey(deletedItem);
+						cursor.requery();
+						return new SwipeDismissList.Undoable() {
+
+							@Override
+							public void undo() {
+								Note memo = new Note(deletedItem, itemToDelete,
+										null, null);
+								memoDao.insert(memo);
+								cursor.requery();
+							}
+
+							@Override
+							public String getTitle() {
+								return itemToDelete + " deleted";
+							}
+
+							@Override
+							public void discard() {
+								memoDao.deleteByKey(deletedItem);
+								cursor.requery();
+
+							}
+						};
+
+					}
+				}
+
+		);
+
 	}
 
 	@SuppressWarnings("deprecation")
@@ -89,19 +114,6 @@ public class ListMemoActivity extends ListActivity {
 			ContextMenuInfo menuInfo) {
 		super.onCreateContextMenu(menu, v, menuInfo);
 		menu.add(0, DELETE_ID, 0, R.string.menu_delete);
-	}
-
-	@SuppressWarnings("deprecation")
-	@Override
-	public boolean onContextItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case DELETE_ID:
-			AdapterContextMenuInfo info = (AdapterContextMenuInfo) item
-					.getMenuInfo();
-			memoDao.deleteByKey(info.id);
-			cursor.requery();
-		}
-		return super.onContextItemSelected(item);
 	}
 
 	@Override
@@ -119,7 +131,7 @@ public class ListMemoActivity extends ListActivity {
 		getMenuInflater().inflate(R.menu.main, menu);
 		MenuItem item = menu.findItem(R.id.action_add);
 		item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-			
+
 			@Override
 			public boolean onMenuItemClick(MenuItem item) {
 				addMemo(item);

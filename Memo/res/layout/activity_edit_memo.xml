@@ -15,6 +15,9 @@
         android:lines="3" >
 
         <requestFocus />
+
+        <requestFocus />
+
     </EditText>
 
     <Spinner
