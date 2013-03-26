@@ -14,6 +14,7 @@
     <string name="toast_input_required">You did not enter any text</string>
     <string name="enter_text_hint">Add a new memo</string>
     <string name="no_memos_yet">no memos yet, tap to add</string>
+    <string name="cancel_timer">Cancel Timer</string>
     
 
     <!-- DaschClock Extension -->

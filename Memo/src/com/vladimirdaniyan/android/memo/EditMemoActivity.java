@@ -23,7 +23,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TimePicker;
-import android.widget.Toast;
 
 import com.azazeleleven.android.memo.DaoMaster;
 import com.azazeleleven.android.memo.DaoMaster.DevOpenHelper;
@@ -43,6 +42,8 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 
 	private EditText editText;
 	private String memoText;
+	private String alarmTime;
+
 	private DaoMaster daoMaster;
 	private DaoSession daoSession;
 	private NoteDao memoDao;
@@ -54,14 +55,27 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 	protected boolean boolTimedNotif = false;
 
 	private Calendar newCal;
+	private Note memo;
+	private View divider;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_edit_memo);
+
+		DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, "memo-db",
+				null);
+		db = helper.getWritableDatabase();
+		daoMaster = new DaoMaster(db);
+		daoSession = daoMaster.newSession();
+		memoDao = daoSession.getNoteDao();
+
 		editText = (EditText) findViewById(R.id.edit_text_memo);
+		divider = findViewById(R.id.divider);
 		Button ok = (Button) findViewById(R.id.button_ok);
 		Button cancel = (Button) findViewById(R.id.button_cancel);
+		Button cancelTimer = (Button) findViewById(R.id.button_cancel_timer);
+		cancelTimer.setOnClickListener(this);
 		ok.setOnClickListener(this);
 		cancel.setOnClickListener(this);
 
@@ -69,11 +83,17 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 		if (extras != null) {
 			String memoText = extras.getString("memoText");
 			mRowId = extras.getLong("mRowId");
+			alarmTime = extras.getString("alarmTime");
 			if (memoText != null && mRowId != null) {
 				editText.setText(memoText);
 				notifId = Ints.checkedCast(mRowId);
+				if (alarmTime != null) {
+					cancelTimer.setVisibility(View.VISIBLE);
+					divider.setVisibility(View.VISIBLE);
+				}
 			}
 		}
+		
 
 		Spinner spinner = (Spinner) findViewById(R.id.spinner1);
 		ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
@@ -101,7 +121,6 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 
 			@Override
 			public void onNothingSelected(AdapterView<?> parent) {
-
 			}
 		});
 
@@ -121,45 +140,56 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.button_ok:
+			memoText = editText.getText().toString();
+			if (memoText.matches("")) {
+				Crouton.makeText(this, R.string.toast_input_required,
+						Style.ALERT, R.id.alternate_view_group).show();
+				return;
+			}
 			if (boolBasicNotif == true) {
 				saveMemoText();
 				showNotification();
 			} else if (boolTimedNotif == true) {
-				saveMemoText();
 				setAlarm(newCal);
 				finish();
 			} else {
 				saveMemoText();
 				finish();
+
 			}
 			break;
 		case R.id.button_cancel:
 			finish();
 			break;
+		case R.id.button_cancel_timer:
+			memoText = editText.getText().toString();
+			cancelAlarm();
+			finish();
 		}
 
 	}
 
+	private void cancelAlarm() {
+		Intent alarmIntent = new Intent(getBaseContext(), TimerReceiver.class);
+		PendingIntent pendingIntent = PendingIntent.getBroadcast(
+				getBaseContext(), notifId, alarmIntent, 0);
+		AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+		alarmManager.cancel(pendingIntent);
+		
+		alarmTime = null;
+		memo = new Note(mRowId, memoText, alarmTime, null);
+		memo.setId(mRowId);
+		memo.setComment(alarmTime);
+		memoDao.insertOrReplace(memo);
+		
+		
+	}
+
 	// save the text that was entered
 	public void saveMemoText() {
-		DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, "memo-db",
-				null);
-		db = helper.getWritableDatabase();
-		daoMaster = new DaoMaster(db);
-		daoSession = daoMaster.newSession();
-		memoDao = daoSession.getNoteDao();
-
-		memoText = editText.getText().toString();
-		if (memoText.matches("")) {
-			Toast.makeText(this, R.string.toast_input_required,
-					Toast.LENGTH_SHORT).show();
-			return;
-		}
-
-		Note memo = new Note(mRowId, memoText, null, null);
+		memo = new Note(mRowId, memoText, null, null);
 		memo.setId(mRowId);
 		memoDao.insertOrReplace(memo);
-
 	}
 
 	// show the notification if applicable
@@ -217,6 +247,9 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 	}
 
 	private void setAlarm(Calendar targetCal) {
+		alarmTime = "Alarm time: "
+				+ java.text.DateFormat.getTimeInstance(
+						java.text.DateFormat.SHORT).format(targetCal.getTime());
 
 		Intent alarmIntent = new Intent(getBaseContext(), TimerReceiver.class);
 		alarmIntent.putExtra("memoText", memoText);
@@ -227,6 +260,11 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 		AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 		alarmManager.set(AlarmManager.RTC_WAKEUP, targetCal.getTimeInMillis(),
 				pendingIntent);
+
+		memo = new Note(mRowId, memoText, alarmTime, null);
+		memo.setId(mRowId);
+		memo.setComment(alarmTime);
+		memoDao.insertOrReplace(memo);
 
 	}
 

@@ -43,10 +43,12 @@ public class ListMemoActivity extends ListActivity {
 		memoDao = daoSession.getNoteDao();
 
 		final String textColumn = NoteDao.Properties.Text.columnName;
+		final String alarmTime = NoteDao.Properties.Comment.columnName;
+
 		cursor = db.query(memoDao.getTablename(), memoDao.getAllColumns(),
 				null, null, null, null, null);
-		String[] from = { textColumn };
-		int[] to = { android.R.id.text1 };
+		String[] from = { textColumn, alarmTime };
+		int[] to = { android.R.id.text1, android.R.id.text2 };
 
 		@SuppressWarnings("deprecation")
 		final SimpleCursorAdapter adapter = new SimpleCursorAdapter(this,
@@ -112,6 +114,8 @@ public class ListMemoActivity extends ListActivity {
 		intent.putExtra("memoText",
 				cursor.getString(cursor.getColumnIndexOrThrow("TEXT")));
 		intent.putExtra("mRowId", id);
+		intent.putExtra("alarmTime",
+				cursor.getString(cursor.getColumnIndexOrThrow("COMMENT")));
 		startActivity(intent);
 	}
 
