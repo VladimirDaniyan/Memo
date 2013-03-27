@@ -66,6 +66,8 @@ public class ListMemoActivity extends ListActivity {
 						cursor.moveToPosition(position);
 						final String itemToDelete = cursor.getString(cursor
 								.getColumnIndexOrThrow("TEXT"));
+						final String itemTime = cursor.getString(cursor
+								.getColumnIndexOrThrow("COMMENT"));
 						final long deletedItem = adapter.getItemId(position);
 
 						memoDao.deleteByKey(deletedItem);
@@ -75,7 +77,7 @@ public class ListMemoActivity extends ListActivity {
 							@Override
 							public void undo() {
 								Note memo = new Note(deletedItem, itemToDelete,
-										null, null);
+										itemTime, null);
 								memoDao.insert(memo);
 								cursor.requery();
 							}
@@ -110,6 +112,7 @@ public class ListMemoActivity extends ListActivity {
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		cursor.moveToPosition(position);
+		
 		Intent intent = new Intent(this, EditMemoActivity.class);
 		intent.putExtra("memoText",
 				cursor.getString(cursor.getColumnIndexOrThrow("TEXT")));

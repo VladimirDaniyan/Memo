@@ -27,7 +27,7 @@
             android:name="com.vladimirdaniyan.android.memo.EditMemoActivity"
             android:label="@string/title_activity_edit_memo"
             android:parentActivityName="com.vladimirdaniyan.android.memo.ListMemoActivity"
-            android:windowSoftInputMode="stateVisible"
+            android:windowSoftInputMode="stateVisible|adjustResize"
             android:exported="true">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

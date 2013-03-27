@@ -1,6 +1,8 @@
 package com.vladimirdaniyan.android.memo;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 
 import android.app.Activity;
 import android.app.AlarmManager;
@@ -14,6 +16,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -57,6 +60,9 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 	private Calendar newCal;
 	private Note memo;
 	private View divider;
+	private Date currentTime;
+
+	public static ArrayList<PendingIntent> alarmList = new ArrayList<PendingIntent>();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -72,6 +78,7 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 
 		editText = (EditText) findViewById(R.id.edit_text_memo);
 		divider = findViewById(R.id.divider);
+
 		Button ok = (Button) findViewById(R.id.button_ok);
 		Button cancel = (Button) findViewById(R.id.button_cancel);
 		Button cancelTimer = (Button) findViewById(R.id.button_cancel_timer);
@@ -84,6 +91,7 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 			String memoText = extras.getString("memoText");
 			mRowId = extras.getLong("mRowId");
 			alarmTime = extras.getString("alarmTime");
+			currentTime = (Date) extras.get("currentTime");
 			if (memoText != null && mRowId != null) {
 				editText.setText(memoText);
 				notifId = Ints.checkedCast(mRowId);
@@ -93,7 +101,6 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 				}
 			}
 		}
-		
 
 		Spinner spinner = (Spinner) findViewById(R.id.spinner1);
 		ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
@@ -155,7 +162,6 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 			} else {
 				saveMemoText();
 				finish();
-
 			}
 			break;
 		case R.id.button_cancel:
@@ -169,27 +175,12 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 
 	}
 
-	private void cancelAlarm() {
-		Intent alarmIntent = new Intent(getBaseContext(), TimerReceiver.class);
-		PendingIntent pendingIntent = PendingIntent.getBroadcast(
-				getBaseContext(), notifId, alarmIntent, 0);
-		AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-		alarmManager.cancel(pendingIntent);
-		
-		alarmTime = null;
-		memo = new Note(mRowId, memoText, alarmTime, null);
-		memo.setId(mRowId);
-		memo.setComment(alarmTime);
-		memoDao.insertOrReplace(memo);
-		
-		
-	}
-
 	// save the text that was entered
-	public void saveMemoText() {
+	private void saveMemoText() {
 		memo = new Note(mRowId, memoText, null, null);
 		memo.setId(mRowId);
 		memoDao.insertOrReplace(memo);
+		db.close();
 	}
 
 	// show the notification if applicable
@@ -246,26 +237,57 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 
 	}
 
+	// set the timer for the memo and pass the alarm time for the listview
 	private void setAlarm(Calendar targetCal) {
-		alarmTime = "Alarm time: "
+		alarmTime = "Alarm was set for : "
 				+ java.text.DateFormat.getTimeInstance(
 						java.text.DateFormat.SHORT).format(targetCal.getTime());
 
+		// inserting the alarm time into the memo
+		memo = new Note(mRowId, memoText, alarmTime, null);
+		memo.setComment(alarmTime);
+		memo.setId(mRowId);
+		memoDao.insertOrReplace(memo);
+
+
 		Intent alarmIntent = new Intent(getBaseContext(), TimerReceiver.class);
 		alarmIntent.putExtra("memoText", memoText);
-		alarmIntent.putExtra("mRowId", mRowId);
-
+		
+		// use unique requestCode by incrementing pending intent array
 		PendingIntent pendingIntent = PendingIntent.getBroadcast(
-				getBaseContext(), notifId, alarmIntent, 0);
-		AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-		alarmManager.set(AlarmManager.RTC_WAKEUP, targetCal.getTimeInMillis(),
-				pendingIntent);
+				getBaseContext(), alarmList.size(), alarmIntent, 0);
 
-		memo = new Note(mRowId, memoText, alarmTime, null);
-		memo.setId(mRowId);
+		Log.d("REQUEST CODE", "Set alarm request code: " + alarmList.size());
+
+		if (Calendar.getInstance().compareTo(targetCal) < 0) {
+			alarmList.add(pendingIntent);
+			AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+			alarmManager.set(AlarmManager.RTC_WAKEUP,
+					targetCal.getTimeInMillis(), pendingIntent);
+			
+			db.close();
+
+		}
+
+	}
+
+	// clear the timer and its text in the main listview
+	private void cancelAlarm() {
+		Intent alarmIntent = new Intent(getBaseContext(), TimerReceiver.class);
+		PendingIntent pendingIntent = PendingIntent.getBroadcast(
+				getBaseContext(), 0, alarmIntent, 0);
+
+		Log.d("REQUEST CODE", "Cancel alarm request code: " + alarmList.size());
+
+		AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+		alarmManager.cancel(pendingIntent);
+		
+		alarmTime = null;
+		memo = new Note(mRowId, memoText, alarmTime, currentTime);
 		memo.setComment(alarmTime);
 		memoDao.insertOrReplace(memo);
 
+		db.close();
 	}
 
 	@Override

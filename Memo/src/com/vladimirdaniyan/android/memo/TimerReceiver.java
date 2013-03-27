@@ -19,12 +19,12 @@ public class TimerReceiver extends BroadcastReceiver {
 
 		String memoText = alarmIntent.getStringExtra("memoText");
 		Long mRowId = alarmIntent.getExtras().getLong("mRowId");
-		
+
 		Intent resultIntent = new Intent(context, ListMemoActivity.class);
 
 		PendingIntent resultPendingIntent = PendingIntent.getActivity(context,
 				0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-		
+
 		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(
 				context)
 				.setSmallIcon(R.drawable.ic_stat_memo)

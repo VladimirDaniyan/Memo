@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="wrap_content" >
 
     <EditText
         android:id="@+id/edit_text_memo"
@@ -9,8 +9,10 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
+        android:layout_marginBottom="4dp"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
+        android:layout_marginTop="4dp"
         android:ems="10"
         android:hint="@string/enter_text_hint"
         android:lines="3" >
@@ -19,15 +21,17 @@
 
         <requestFocus />
     </EditText>
-    
-     <Spinner
-         android:id="@+id/spinner1"
-         android:layout_width="fill_parent"
-         android:layout_height="wrap_content"
-         android:layout_below="@+id/edit_text_memo"
-         android:layout_marginLeft="16dp"
-         android:layout_marginRight="16dp"
-         android:entries="@array/notification_types" />
+
+    <Spinner
+        android:id="@+id/spinner1"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/edit_text_memo"
+        android:layout_marginBottom="4dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginTop="4dp"
+        android:entries="@array/notification_types" />
 
     <Button
         android:id="@+id/button_cancel_timer"
@@ -36,8 +40,10 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/spinner1"
         android:layout_centerHorizontal="true"
+        android:layout_marginBottom="4dp"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
+        android:layout_marginTop="4dp"
         android:text="@string/cancel_timer"
         android:visibility="gone" />
 
@@ -52,14 +58,31 @@
         android:visibility="gone" />
 
     <LinearLayout
+        android:id="@+id/alternate_view_group"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/divider"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="16dp"
+        android:orientation="vertical" >
+    </LinearLayout>
+
+    <View
+        android:id="@+id/divider2"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_above="@+id/linearLayout1"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:background="?android:attr/dividerHorizontal" />
+
+    <LinearLayout
         android:id="@+id/linearLayout1"
         style="?android:attr/buttonBarStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@+id/divider"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp" >
+        android:layout_alignLeft="@+id/alternate_view_group"
+        android:layout_alignParentBottom="true" >
 
         <Button
             android:id="@+id/button_cancel"
@@ -77,27 +100,5 @@
             android:layout_weight="1"
             android:text="@android:string/ok" />
     </LinearLayout>
-    
-    
-   <!--  <View
-        android:id="@+id/divider2"
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp" 
-        android:layout_below="@+id/linearLayout1"
-        android:background="?android:attr/dividerHorizontal"/> -->
-
-    <LinearLayout
-        android:id="@+id/alternate_view_group"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/linearLayout1"
-        android:layout_centerHorizontal="true"
-        android:layout_margin="16dp"
-        android:orientation="vertical" >
-    </LinearLayout>
-
-   
 
 </RelativeLayout>
