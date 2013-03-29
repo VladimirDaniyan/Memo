@@ -10,15 +10,12 @@ import android.content.Intent;
 import android.media.RingtoneManager;
 import android.support.v4.app.NotificationCompat;
 
-import com.google.common.primitives.Ints;
-
 public class TimerReceiver extends BroadcastReceiver {
 
 	@Override
 	public void onReceive(Context context, Intent alarmIntent) {
 
 		String memoText = alarmIntent.getStringExtra("memoText");
-		Long mRowId = alarmIntent.getExtras().getLong("mRowId");
 
 		Intent resultIntent = new Intent(context, ListMemoActivity.class);
 
@@ -43,7 +40,7 @@ public class TimerReceiver extends BroadcastReceiver {
 
 		NotificationManager mNotificationManager = (NotificationManager) context
 				.getSystemService(Context.NOTIFICATION_SERVICE);
-		mNotificationManager.notify(Ints.checkedCast(mRowId), mBuilder.build());
+		mNotificationManager.notify(0, mBuilder.build());
 
 	}
 

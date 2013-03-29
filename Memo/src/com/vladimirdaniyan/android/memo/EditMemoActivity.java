@@ -15,7 +15,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -31,7 +30,6 @@ import com.azazeleleven.android.memo.DaoMaster.DevOpenHelper;
 import com.azazeleleven.android.memo.DaoSession;
 import com.azazeleleven.android.memo.Note;
 import com.azazeleleven.android.memo.NoteDao;
-import com.google.common.primitives.Ints;
 
 import de.keyboardsurfer.android.widget.crouton.Crouton;
 import de.keyboardsurfer.android.widget.crouton.Style;
@@ -51,7 +49,6 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 	private NoteDao memoDao;
 	private SQLiteDatabase db;
 	private Long mRowId;
-	private int notifId;
 
 	protected boolean boolBasicNotif = false;
 	protected boolean boolTimedNotif = false;
@@ -59,6 +56,7 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 	private Calendar newCal;
 	private Note memo;
 	private View divider;
+
 	private Date currentTime;
 
 	@Override
@@ -76,6 +74,8 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 		editText = (EditText) findViewById(R.id.edit_text_memo);
 		divider = findViewById(R.id.divider);
 
+		currentTime = Calendar.getInstance().getTime();
+
 		Button ok = (Button) findViewById(R.id.button_ok);
 		Button cancel = (Button) findViewById(R.id.button_cancel);
 		Button cancelTimer = (Button) findViewById(R.id.button_cancel_timer);
@@ -91,7 +91,6 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 			currentTime = (Date) extras.get("currentTime");
 			if (memoText != null && mRowId != null) {
 				editText.setText(memoText);
-				notifId = Ints.checkedCast(mRowId);
 				if (alarmTime != null) {
 					// only show the cancel timer button if an alarm was
 					// previously set
@@ -177,7 +176,10 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 
 	// save the text that was entered
 	private void saveMemoText() {
-		memo = new Note(mRowId, memoText, null, null);
+		alarmTime = null;
+		memo = new Note(mRowId, memoText, alarmTime, currentTime);
+		memo.setComment(alarmTime);
+		memo.setDate(currentTime);
 		memo.setId(mRowId);
 		memoDao.insertOrReplace(memo);
 		db.close();
@@ -207,7 +209,7 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 		builder.setContentIntent(resultPendingIntent);
 
 		NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-		nm.notify(notifId, builder.build());
+		nm.notify((int) currentTime.getTime(), builder.build());
 
 		finish();
 
@@ -264,16 +266,10 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 
 		db.close();
 
-		Log.d(ListMemoActivity.TAG,
-				"currentTime in millis as request code: " + currentTime.getTime());
-
 	}
 
 	// clear the timer and its text in the main listview
 	private void cancelAlarm() {
-
-		Log.d(ListMemoActivity.TAG,
-				"currentTime in millis as requestCode: " + currentTime.getTime());
 
 		Intent alarmIntent = new Intent(getBaseContext(), TimerReceiver.class);
 		PendingIntent pendingIntent = PendingIntent.getBroadcast(
@@ -288,9 +284,6 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 		memo.setComment(alarmTime);
 		memo.setDate(currentTime);
 		memoDao.insertOrReplace(memo);
-
-		Log.d(ListMemoActivity.TAG, "Current Time for Cancel alarm intent: "
-				+ currentTime);
 
 		db.close();
 	}

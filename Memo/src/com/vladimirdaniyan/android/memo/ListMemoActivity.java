@@ -1,5 +1,6 @@
 package com.vladimirdaniyan.android.memo;
 
+import java.util.Calendar;
 import java.util.Date;
 
 import android.app.ListActivity;
@@ -7,7 +8,6 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -68,35 +68,37 @@ public class ListMemoActivity extends ListActivity {
 					public Undoable onDismiss(ListView listView,
 							final int position) {
 						cursor.moveToPosition(position);
-						final String itemToDelete = cursor.getString(cursor
+						
+						
+						
+						final String memoText = cursor.getString(cursor
 								.getColumnIndexOrThrow("TEXT"));
-						final String itemTime = cursor.getString(cursor
+						final String alarmTime = cursor.getString(cursor
 								.getColumnIndexOrThrow("COMMENT"));
+						final long mRowId = adapter.getItemId(position);
+						Note memo = memoDao.loadByRowId(mRowId);
+						final Date currentTimeRequestCode = memo.getDate();
 
-						final long deletedItem = adapter.getItemId(position);
-						final Date currentTimeRequestCode = memoDao.load(
-								deletedItem).getDate();
-
-						memoDao.deleteByKey(deletedItem);
+						memoDao.deleteByKey(mRowId);
 						cursor.requery();
 						return new SwipeDismissList.Undoable() {
 
 							@Override
 							public void undo() {
-								Note memo = new Note(deletedItem, itemToDelete,
-										itemTime, currentTimeRequestCode);
+								Note memo = new Note(mRowId, memoText,
+										alarmTime, currentTimeRequestCode);
 								memoDao.insert(memo);
 								cursor.requery();
 							}
 
 							@Override
 							public String getTitle() {
-								return itemToDelete + " deleted";
+								return memoText + " deleted";
 							}
 
 							@Override
 							public void discard() {
-								memoDao.deleteByKey(deletedItem);
+								memoDao.deleteByKey(mRowId);
 								cursor.requery();
 
 							}
@@ -121,6 +123,11 @@ public class ListMemoActivity extends ListActivity {
 		cursor.moveToPosition(position);
 
 		Note memo = memoDao.loadByRowId(id);
+		
+//		this attribute was null in previous versions
+		if (memo.getDate() == null){
+			memo.setDate(Calendar.getInstance().getTime());
+		}
 
 		Intent intent = new Intent(this, EditMemoActivity.class);
 		intent.putExtra("memoText",
@@ -129,8 +136,6 @@ public class ListMemoActivity extends ListActivity {
 		intent.putExtra("alarmTime",
 				cursor.getString(cursor.getColumnIndexOrThrow("COMMENT")));
 		intent.putExtra("currentTime", memo.getDate());
-
-		Log.v(TAG, "memo time as request code: " + memo.getDate().getTime());
 		startActivity(intent);
 	}
 
