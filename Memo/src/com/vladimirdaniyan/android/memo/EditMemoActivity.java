@@ -1,6 +1,5 @@
 package com.vladimirdaniyan.android.memo;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -62,8 +61,6 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 	private View divider;
 	private Date currentTime;
 
-	public static ArrayList<PendingIntent> alarmList = new ArrayList<PendingIntent>();
-
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -96,6 +93,8 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 				editText.setText(memoText);
 				notifId = Ints.checkedCast(mRowId);
 				if (alarmTime != null) {
+					// only show the cancel timer button if an alarm was
+					// previously set
 					cancelTimer.setVisibility(View.VISIBLE);
 					divider.setVisibility(View.VISIBLE);
 				}
@@ -148,6 +147,7 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 		switch (v.getId()) {
 		case R.id.button_ok:
 			memoText = editText.getText().toString();
+			// check if the text is empty before saving is allowed
 			if (memoText.matches("")) {
 				Crouton.makeText(this, R.string.toast_input_required,
 						Style.ALERT, R.id.alternate_view_group).show();
@@ -243,49 +243,54 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 				+ java.text.DateFormat.getTimeInstance(
 						java.text.DateFormat.SHORT).format(targetCal.getTime());
 
-		// inserting the alarm time into the memo
-		memo = new Note(mRowId, memoText, alarmTime, null);
+		// use the current time as a unique requestCode for the pending intent
+		currentTime = Calendar.getInstance().getTime();
+
+		Intent alarmIntent = new Intent(getBaseContext(), TimerReceiver.class);
+		alarmIntent.putExtra("memoText", memoText);
+		PendingIntent pendingIntent = PendingIntent.getBroadcast(
+				getBaseContext(), (int) currentTime.getTime(), alarmIntent, 0);
+
+		AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+		alarmManager.set(AlarmManager.RTC_WAKEUP, targetCal.getTimeInMillis(),
+				pendingIntent);
+
+		// insert the alarm time and date into the memo
+		memo = new Note(mRowId, memoText, alarmTime, currentTime);
+		memo.setDate(currentTime);
 		memo.setComment(alarmTime);
 		memo.setId(mRowId);
 		memoDao.insertOrReplace(memo);
 
+		db.close();
 
-		Intent alarmIntent = new Intent(getBaseContext(), TimerReceiver.class);
-		alarmIntent.putExtra("memoText", memoText);
-		
-		// use unique requestCode by incrementing pending intent array
-		PendingIntent pendingIntent = PendingIntent.getBroadcast(
-				getBaseContext(), alarmList.size(), alarmIntent, 0);
-
-		Log.d("REQUEST CODE", "Set alarm request code: " + alarmList.size());
-
-		if (Calendar.getInstance().compareTo(targetCal) < 0) {
-			alarmList.add(pendingIntent);
-			AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-			alarmManager.set(AlarmManager.RTC_WAKEUP,
-					targetCal.getTimeInMillis(), pendingIntent);
-			
-			db.close();
-
-		}
+		Log.d(ListMemoActivity.TAG,
+				"currentTime in millis as request code: " + currentTime.getTime());
 
 	}
 
 	// clear the timer and its text in the main listview
 	private void cancelAlarm() {
+
+		Log.d(ListMemoActivity.TAG,
+				"currentTime in millis as requestCode: " + currentTime.getTime());
+
 		Intent alarmIntent = new Intent(getBaseContext(), TimerReceiver.class);
 		PendingIntent pendingIntent = PendingIntent.getBroadcast(
-				getBaseContext(), 0, alarmIntent, 0);
-
-		Log.d("REQUEST CODE", "Cancel alarm request code: " + alarmList.size());
-
+				getBaseContext(), (int) currentTime.getTime(), alarmIntent, 0);
 		AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 		alarmManager.cancel(pendingIntent);
-		
+
+		// set the alarm time and date to null since they aren't needed anymore
 		alarmTime = null;
+		Date currentTime = null;
 		memo = new Note(mRowId, memoText, alarmTime, currentTime);
 		memo.setComment(alarmTime);
+		memo.setDate(currentTime);
 		memoDao.insertOrReplace(memo);
+
+		Log.d(ListMemoActivity.TAG, "Current Time for Cancel alarm intent: "
+				+ currentTime);
 
 		db.close();
 	}

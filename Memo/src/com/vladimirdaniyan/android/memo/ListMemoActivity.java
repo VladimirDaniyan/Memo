@@ -1,10 +1,13 @@
 package com.vladimirdaniyan.android.memo;
 
+import java.util.Date;
+
 import android.app.ListActivity;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -22,6 +25,7 @@ import de.timroes.swipetodismiss.SwipeDismissList.Undoable;
 
 public class ListMemoActivity extends ListActivity {
 
+	public static final String TAG = "memoapp";
 	private DaoMaster daoMaster;
 	private DaoSession daoSession;
 	private NoteDao memoDao;
@@ -68,7 +72,10 @@ public class ListMemoActivity extends ListActivity {
 								.getColumnIndexOrThrow("TEXT"));
 						final String itemTime = cursor.getString(cursor
 								.getColumnIndexOrThrow("COMMENT"));
+
 						final long deletedItem = adapter.getItemId(position);
+						final Date currentTimeRequestCode = memoDao.load(
+								deletedItem).getDate();
 
 						memoDao.deleteByKey(deletedItem);
 						cursor.requery();
@@ -77,7 +84,7 @@ public class ListMemoActivity extends ListActivity {
 							@Override
 							public void undo() {
 								Note memo = new Note(deletedItem, itemToDelete,
-										itemTime, null);
+										itemTime, currentTimeRequestCode);
 								memoDao.insert(memo);
 								cursor.requery();
 							}
@@ -112,13 +119,18 @@ public class ListMemoActivity extends ListActivity {
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		cursor.moveToPosition(position);
-		
+
+		Note memo = memoDao.loadByRowId(id);
+
 		Intent intent = new Intent(this, EditMemoActivity.class);
 		intent.putExtra("memoText",
 				cursor.getString(cursor.getColumnIndexOrThrow("TEXT")));
 		intent.putExtra("mRowId", id);
 		intent.putExtra("alarmTime",
 				cursor.getString(cursor.getColumnIndexOrThrow("COMMENT")));
+		intent.putExtra("currentTime", memo.getDate());
+
+		Log.v(TAG, "memo time as request code: " + memo.getDate().getTime());
 		startActivity(intent);
 	}
 
