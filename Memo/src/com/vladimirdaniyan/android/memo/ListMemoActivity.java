@@ -1,6 +1,5 @@
 package com.vladimirdaniyan.android.memo;
 
-import java.util.Calendar;
 import java.util.Date;
 
 import android.app.ListActivity;

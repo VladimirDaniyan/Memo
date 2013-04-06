@@ -33,29 +33,6 @@
         android:layout_marginTop="4dp"
         android:entries="@array/notification_types" />
 
-    <Button
-        android:id="@+id/button_cancel_timer"
-        style="?android:attr/buttonBarButtonStyle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/spinner1"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="4dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginTop="4dp"
-        android:text="@string/cancel_timer"
-        android:visibility="gone" />
-
-    <View
-        android:id="@+id/divider"
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_below="@+id/button_cancel_timer"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:background="?android:attr/dividerHorizontal"
-        android:visibility="gone" />
 
     <LinearLayout
         android:id="@+id/alternate_view_group"
@@ -68,37 +45,41 @@
     </LinearLayout>
 
     <View
-        android:id="@+id/divider2"
+        android:id="@+id/divider"
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_above="@+id/linearLayout1"
+        android:layout_below="@+id/ll_timer_button_host"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
-        android:background="?android:attr/dividerHorizontal" />
+        android:background="?android:attr/dividerHorizontal"
+        android:visibility="gone" />
 
     <LinearLayout
-        android:id="@+id/linearLayout1"
+        android:id="@+id/ll_timer_button_host"
         style="?android:attr/buttonBarStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/alternate_view_group"
-        android:layout_alignParentBottom="true" >
+        android:layout_alignLeft="@+id/spinner1"
+        android:layout_below="@+id/spinner1"
+        android:layout_marginRight="16dp"
+        android:layout_marginTop="4dp"
+        android:visibility="gone" >
 
         <Button
-            android:id="@+id/button_cancel"
+            android:id="@+id/button_cancel_timer"
             style="?android:attr/buttonBarButtonStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@android:string/cancel" />
+            android:text="@string/cancel_timer" />
 
         <Button
-            android:id="@+id/button_ok"
+            android:id="@+id/button_set_timer"
             style="?android:attr/buttonBarButtonStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@android:string/ok" />
+            android:text="@string/set_timer" />
     </LinearLayout>
 
 </RelativeLayout>

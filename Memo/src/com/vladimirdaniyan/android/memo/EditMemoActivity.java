@@ -3,6 +3,7 @@ package com.vladimirdaniyan.android.memo;
 import java.util.Calendar;
 import java.util.Date;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.NotificationManager;
@@ -11,19 +12,20 @@ import android.app.TimePickerDialog;
 import android.app.TimePickerDialog.OnTimeSetListener;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
-import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TimePicker;
 
@@ -52,18 +54,11 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 	private SQLiteDatabase db;
 	private Long mRowId;
 
-	// protected boolean boolBasicNotif = false;
-	// protected boolean boolTimedNotif = false;
-
 	private Calendar newCal;
 	private Note memo;
 	private View divider;
+	private LinearLayout llTimerButtonHost;
 
-	// private final int NO_NOTIF_MODE = 0;
-	// private final int BASIC_NOTIF_MODE = 1;
-	// private final int TIMED_NOTIF_MODE = 2;
-
-	private SharedPreferences mPrefs;
 	private int mCurSpinnerPos = 0;
 
 	private Date currentTime;
@@ -73,6 +68,57 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_edit_memo);
 
+		// Inflate a "Done/Discard" custom action bar view.
+		LayoutInflater inflater = (LayoutInflater) getActionBar()
+				.getThemedContext().getSystemService(LAYOUT_INFLATER_SERVICE);
+		final View customActionBarView = inflater.inflate(
+				R.layout.actionbar_custom_view_done_discard, null);
+		customActionBarView.findViewById(R.id.actionbar_done)
+				.setOnClickListener(new View.OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						memoText = editText.getText().toString();
+
+						// check if the text is empty before saving is allowed
+						if (memoText.matches("")) {
+							Crouton.makeText(getParent(),
+									R.string.toast_input_required, Style.ALERT,
+									R.id.alternate_view_group).show();
+							return;
+						}
+
+						// Get the spinner preference
+						if (mCurSpinnerPos == 1) {
+							currentTime = Calendar.getInstance().getTime();
+							saveMemoText();
+							showNotification();
+						} else if (mCurSpinnerPos == 2) {
+							setAlarm(newCal);
+							finish();
+						} else {
+							saveMemoText();
+							finish();
+						}
+					}
+				});
+		customActionBarView.findViewById(R.id.actionbar_discard)
+				.setOnClickListener(new View.OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						finish();
+					}
+				});
+
+		// Show the custom action bar view and hide the normal Home icon and
+		// title.
+		final ActionBar actionBar = getActionBar();
+		actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM,
+				ActionBar.DISPLAY_SHOW_CUSTOM | ActionBar.DISPLAY_SHOW_HOME
+						| ActionBar.DISPLAY_SHOW_TITLE);
+		actionBar.setCustomView(customActionBarView,
+				new ActionBar.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+						ViewGroup.LayoutParams.MATCH_PARENT));
+
 		DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, "memo-db",
 				null);
 		db = helper.getWritableDatabase();
@@ -81,34 +127,34 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 		memoDao = daoSession.getNoteDao();
 
 		editText = (EditText) findViewById(R.id.edit_text_memo);
+		llTimerButtonHost = (LinearLayout) findViewById(R.id.ll_timer_button_host);
 		divider = findViewById(R.id.divider);
 
-		Button ok = (Button) findViewById(R.id.button_ok);
-		Button cancel = (Button) findViewById(R.id.button_cancel);
 		Button cancelTimer = (Button) findViewById(R.id.button_cancel_timer);
+		Button changeTimer = (Button) findViewById(R.id.button_set_timer);
+		changeTimer.setOnClickListener(this);
 		cancelTimer.setOnClickListener(this);
-		ok.setOnClickListener(this);
-		cancel.setOnClickListener(this);
-		
+
 		mCurSpinnerPos = 0;
-		
+
 		Bundle extras = getIntent().getExtras();
 		if (extras != null) {
 			String memoText = extras.getString("memoText");
 			mRowId = extras.getLong("mRowId");
 			alarmTime = extras.getString("alarmTime");
 			currentTime = (Date) extras.get("currentTime");
-//			Log.d("LOG_TAG", "the value of currentTime is " + currentTime);
+			// Log.d("LOG_TAG", "the value of currentTime is " + currentTime);
 			if (memoText != null && mRowId != null) {
 				editText.setText(memoText);
-//				mCurSpinnerPos = 0;
+				// mCurSpinnerPos = 0;
 				if (currentTime != null) {
 					mCurSpinnerPos = 1;
 					if (alarmTime != null) {
 						// only show the cancel timer button if an alarm was
 						// previously set
 						mCurSpinnerPos = 2;
-						cancelTimer.setVisibility(View.VISIBLE);
+						llTimerButtonHost.setVisibility(View.VISIBLE);
+						// cancelTimer.setVisibility(View.VISIBLE);
 						divider.setVisibility(View.VISIBLE);
 					}
 				}
@@ -140,7 +186,10 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 					break;
 				case 2:
 					mCurSpinnerPos = spinner.getSelectedItemPosition();
-					openTimePickerDialog(false);
+					if (alarmTime == null) {
+						openTimePickerDialog(false);
+					}
+
 					break;
 				}
 
@@ -168,36 +217,12 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
-		case R.id.button_ok:
-			memoText = editText.getText().toString();
-
-			// check if the text is empty before saving is allowed
-			if (memoText.matches("")) {
-				Crouton.makeText(this, R.string.toast_input_required,
-						Style.ALERT, R.id.alternate_view_group).show();
-				return;
-			}
-
-			// Get the spinner preference
-			if (mCurSpinnerPos == 1) {
-				currentTime = Calendar.getInstance().getTime();
-				saveMemoText();
-				showNotification();
-			} else if (mCurSpinnerPos == 2) {
-				setAlarm(newCal);
-				finish();
-			} else {
-				saveMemoText();
-				finish();
-			}
-			break;
-		case R.id.button_cancel:
-			finish();
-			break;
 		case R.id.button_cancel_timer:
 			memoText = editText.getText().toString();
 			cancelAlarm();
 			finish();
+		case R.id.button_set_timer:
+			openTimePickerDialog(false);
 		}
 
 	}
@@ -210,9 +235,8 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 		} else if (mCurSpinnerPos == 1) {
 			alarmTime = null;
 		}
-		
-//		Log.d("LOG_TAG", "the cursor is in position " + mCurSpinnerPos);
-		
+
+		// Log.d("LOG_TAG", "the cursor is in position " + mCurSpinnerPos);
 
 		memo = new Note(mRowId, memoText, alarmTime, currentTime);
 		memo.setComment(alarmTime);
@@ -220,7 +244,7 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 		memo.setId(mRowId);
 		memoDao.insertOrReplace(memo);
 		db.close();
-//		Log.d("LOG_TAG", "the value of currentTime is " + currentTime);
+		// Log.d("LOG_TAG", "the value of currentTime is " + currentTime);
 	}
 
 	// show the notification if applicable
