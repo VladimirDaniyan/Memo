@@ -22,7 +22,7 @@
     <string name="extension_description">Adds a quick memo to your notification bar</string>
 
     <string-array name="notification_types">
-        <item>No Notificaiton</item>
+        <item>No Notification</item>
         <item>Basic Notification</item>
         <item>Timed Notification</item>
     </string-array>
