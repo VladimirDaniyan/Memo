@@ -125,9 +125,9 @@ public class ListMemoActivity extends ListActivity {
 		Note memo = memoDao.loadByRowId(id);
 		
 //		this attribute was null in previous versions
-		if (memo.getDate() == null){
-			memo.setDate(Calendar.getInstance().getTime());
-		}
+//		if (memo.getDate() == null){
+//			memo.setDate(Calendar.getInstance().getTime());
+//		}
 
 		Intent intent = new Intent(this, EditMemoActivity.class);
 		intent.putExtra("memoText",

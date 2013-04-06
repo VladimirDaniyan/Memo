@@ -11,10 +11,12 @@ import android.app.TimePickerDialog;
 import android.app.TimePickerDialog.OnTimeSetListener;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -50,12 +52,19 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 	private SQLiteDatabase db;
 	private Long mRowId;
 
-	protected boolean boolBasicNotif = false;
-	protected boolean boolTimedNotif = false;
+	// protected boolean boolBasicNotif = false;
+	// protected boolean boolTimedNotif = false;
 
 	private Calendar newCal;
 	private Note memo;
 	private View divider;
+
+	// private final int NO_NOTIF_MODE = 0;
+	// private final int BASIC_NOTIF_MODE = 1;
+	// private final int TIMED_NOTIF_MODE = 2;
+
+	private SharedPreferences mPrefs;
+	private int mCurSpinnerPos = 0;
 
 	private Date currentTime;
 
@@ -74,50 +83,63 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 		editText = (EditText) findViewById(R.id.edit_text_memo);
 		divider = findViewById(R.id.divider);
 
-		currentTime = Calendar.getInstance().getTime();
-
 		Button ok = (Button) findViewById(R.id.button_ok);
 		Button cancel = (Button) findViewById(R.id.button_cancel);
 		Button cancelTimer = (Button) findViewById(R.id.button_cancel_timer);
 		cancelTimer.setOnClickListener(this);
 		ok.setOnClickListener(this);
 		cancel.setOnClickListener(this);
-
+		
+		mCurSpinnerPos = 0;
+		
 		Bundle extras = getIntent().getExtras();
 		if (extras != null) {
 			String memoText = extras.getString("memoText");
 			mRowId = extras.getLong("mRowId");
 			alarmTime = extras.getString("alarmTime");
 			currentTime = (Date) extras.get("currentTime");
+//			Log.d("LOG_TAG", "the value of currentTime is " + currentTime);
 			if (memoText != null && mRowId != null) {
 				editText.setText(memoText);
-				if (alarmTime != null) {
-					// only show the cancel timer button if an alarm was
-					// previously set
-					cancelTimer.setVisibility(View.VISIBLE);
-					divider.setVisibility(View.VISIBLE);
+//				mCurSpinnerPos = 0;
+				if (currentTime != null) {
+					mCurSpinnerPos = 1;
+					if (alarmTime != null) {
+						// only show the cancel timer button if an alarm was
+						// previously set
+						mCurSpinnerPos = 2;
+						cancelTimer.setVisibility(View.VISIBLE);
+						divider.setVisibility(View.VISIBLE);
+					}
 				}
 			}
 		}
 
-		Spinner spinner = (Spinner) findViewById(R.id.spinner1);
+		final Spinner spinner = (Spinner) findViewById(R.id.spinner1);
+
 		ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
 				this, R.array.notification_types,
 				android.R.layout.simple_spinner_item);
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		spinner.setAdapter(adapter);
+		spinner.setSelection(mCurSpinnerPos);
 
 		spinner.setOnItemSelectedListener(new OnItemSelectedListener() {
 
 			@Override
 			public void onItemSelected(AdapterView<?> parent, View view,
 					int position, long id) {
+
+				// save the spinner position
 				switch (position) {
+				case 0:
+					mCurSpinnerPos = spinner.getSelectedItemPosition();
+					break;
 				case 1:
-					boolBasicNotif = true;
+					mCurSpinnerPos = spinner.getSelectedItemPosition();
 					break;
 				case 2:
-					boolTimedNotif = true;
+					mCurSpinnerPos = spinner.getSelectedItemPosition();
 					openTimePickerDialog(false);
 					break;
 				}
@@ -126,6 +148,8 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 
 			@Override
 			public void onNothingSelected(AdapterView<?> parent) {
+				mCurSpinnerPos = 0;
+				//
 			}
 		});
 
@@ -146,16 +170,20 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 		switch (v.getId()) {
 		case R.id.button_ok:
 			memoText = editText.getText().toString();
+
 			// check if the text is empty before saving is allowed
 			if (memoText.matches("")) {
 				Crouton.makeText(this, R.string.toast_input_required,
 						Style.ALERT, R.id.alternate_view_group).show();
 				return;
 			}
-			if (boolBasicNotif == true) {
+
+			// Get the spinner preference
+			if (mCurSpinnerPos == 1) {
+				currentTime = Calendar.getInstance().getTime();
 				saveMemoText();
 				showNotification();
-			} else if (boolTimedNotif == true) {
+			} else if (mCurSpinnerPos == 2) {
 				setAlarm(newCal);
 				finish();
 			} else {
@@ -176,13 +204,23 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 
 	// save the text that was entered
 	private void saveMemoText() {
-		alarmTime = null;
+		if (mCurSpinnerPos == 0) {
+			alarmTime = null;
+			currentTime = null;
+		} else if (mCurSpinnerPos == 1) {
+			alarmTime = null;
+		}
+		
+//		Log.d("LOG_TAG", "the cursor is in position " + mCurSpinnerPos);
+		
+
 		memo = new Note(mRowId, memoText, alarmTime, currentTime);
 		memo.setComment(alarmTime);
 		memo.setDate(currentTime);
 		memo.setId(mRowId);
 		memoDao.insertOrReplace(memo);
 		db.close();
+//		Log.d("LOG_TAG", "the value of currentTime is " + currentTime);
 	}
 
 	// show the notification if applicable
@@ -257,12 +295,14 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 		alarmManager.set(AlarmManager.RTC_WAKEUP, targetCal.getTimeInMillis(),
 				pendingIntent);
 
-		// insert the alarm time and date into the memo
-		memo = new Note(mRowId, memoText, alarmTime, currentTime);
-		memo.setDate(currentTime);
-		memo.setComment(alarmTime);
-		memo.setId(mRowId);
-		memoDao.insertOrReplace(memo);
+		// // insert the alarm time and date into the memo
+		// memo = new Note(mRowId, memoText, alarmTime, currentTime);
+		// memo.setDate(currentTime);
+		// memo.setComment(alarmTime);
+		// memo.setId(mRowId);
+		// memoDao.insertOrReplace(memo);
+
+		saveMemoText();
 
 		db.close();
 
