@@ -68,7 +68,7 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_edit_memo);
 
-		currentTime = Calendar.getInstance().getTime();
+//		currentTime = Calendar.getInstance().getTime();
 
 		DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, "memo-db",
 				null);
@@ -167,6 +167,9 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 						}
 						// Get the spinner position
 						if (mCurSpinnerPos == 1) {
+							if (currentTime == null) {
+								currentTime = Calendar.getInstance().getTime();
+							}
 							saveMemoText();
 							showNotification();
 						} else if (mCurSpinnerPos == 2) {
@@ -207,10 +210,11 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 		} else {
 			mCurSpinnerPos = 1;
 			memoText = msg;
-			// currentTime = Calendar.getInstance().getTime();
+			currentTime = Calendar.getInstance().getTime();
+			mRowId = null;
 			saveMemoText();
 			showNotification();
-			;
+			
 		}
 
 	}
@@ -318,7 +322,7 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 						java.text.DateFormat.SHORT).format(targetCal.getTime());
 
 		// use the current time as a unique requestCode for the pending intent
-//		 currentTime = Calendar.getInstance().getTime();
+		 currentTime = Calendar.getInstance().getTime();
 
 		Intent alarmIntent = new Intent(getBaseContext(), TimerReceiver.class);
 		alarmIntent.putExtra("memoText", memoText);
