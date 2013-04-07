@@ -135,8 +135,22 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 		changeTimer.setOnClickListener(this);
 		cancelTimer.setOnClickListener(this);
 
+		// set the spinner default to no notification
 		mCurSpinnerPos = 0;
+		
+		// Get Note to Self intent
+		String msg = getIntent().getStringExtra("android.intent.extra.TEXT");
+		if (msg == null) {
+			// do nothing
+		}  else {
+			mCurSpinnerPos = 1;
+			memoText = msg;
+			currentTime = Calendar.getInstance().getTime();
+			saveMemoText();
+			showNotification();;
+		}
 
+		// Get extras from list activity
 		Bundle extras = getIntent().getExtras();
 		if (extras != null) {
 			String memoText = extras.getString("memoText");
@@ -154,7 +168,6 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 						// previously set
 						mCurSpinnerPos = 2;
 						llTimerButtonHost.setVisibility(View.VISIBLE);
-						// cancelTimer.setVisibility(View.VISIBLE);
 						divider.setVisibility(View.VISIBLE);
 					}
 				}
@@ -236,15 +249,12 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 			alarmTime = null;
 		}
 
-		// Log.d("LOG_TAG", "the cursor is in position " + mCurSpinnerPos);
-
 		memo = new Note(mRowId, memoText, alarmTime, currentTime);
 		memo.setComment(alarmTime);
 		memo.setDate(currentTime);
 		memo.setId(mRowId);
 		memoDao.insertOrReplace(memo);
 		db.close();
-		// Log.d("LOG_TAG", "the value of currentTime is " + currentTime);
 	}
 
 	// show the notification if applicable
@@ -319,12 +329,6 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 		alarmManager.set(AlarmManager.RTC_WAKEUP, targetCal.getTimeInMillis(),
 				pendingIntent);
 
-		// // insert the alarm time and date into the memo
-		// memo = new Note(mRowId, memoText, alarmTime, currentTime);
-		// memo.setDate(currentTime);
-		// memo.setComment(alarmTime);
-		// memo.setId(mRowId);
-		// memoDao.insertOrReplace(memo);
 
 		saveMemoText();
 
