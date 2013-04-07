@@ -67,57 +67,8 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_edit_memo);
-
-		// Inflate a "Done/Discard" custom action bar view.
-		LayoutInflater inflater = (LayoutInflater) getActionBar()
-				.getThemedContext().getSystemService(LAYOUT_INFLATER_SERVICE);
-		final View customActionBarView = inflater.inflate(
-				R.layout.actionbar_custom_view_done_discard, null);
-		customActionBarView.findViewById(R.id.actionbar_done)
-				.setOnClickListener(new View.OnClickListener() {
-					@Override
-					public void onClick(View v) {
-						memoText = editText.getText().toString();
-
-						// check if the text is empty before saving is allowed
-						if (memoText.matches("")) {
-							Crouton.makeText(getParent(),
-									R.string.toast_input_required, Style.ALERT,
-									R.id.alternate_view_group).show();
-							return;
-						}
-
-						// Get the spinner preference
-						if (mCurSpinnerPos == 1) {
-							currentTime = Calendar.getInstance().getTime();
-							saveMemoText();
-							showNotification();
-						} else if (mCurSpinnerPos == 2) {
-							setAlarm(newCal);
-							finish();
-						} else {
-							saveMemoText();
-							finish();
-						}
-					}
-				});
-		customActionBarView.findViewById(R.id.actionbar_discard)
-				.setOnClickListener(new View.OnClickListener() {
-					@Override
-					public void onClick(View v) {
-						finish();
-					}
-				});
-
-		// Show the custom action bar view and hide the normal Home icon and
-		// title.
-		final ActionBar actionBar = getActionBar();
-		actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM,
-				ActionBar.DISPLAY_SHOW_CUSTOM | ActionBar.DISPLAY_SHOW_HOME
-						| ActionBar.DISPLAY_SHOW_TITLE);
-		actionBar.setCustomView(customActionBarView,
-				new ActionBar.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-						ViewGroup.LayoutParams.MATCH_PARENT));
+		
+		currentTime = Calendar.getInstance().getTime();
 
 		DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, "memo-db",
 				null);
@@ -134,21 +85,7 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 		Button changeTimer = (Button) findViewById(R.id.button_set_timer);
 		changeTimer.setOnClickListener(this);
 		cancelTimer.setOnClickListener(this);
-
-		// set the spinner default to no notification
-		mCurSpinnerPos = 0;
 		
-		// Get Note to Self intent
-		String msg = getIntent().getStringExtra("android.intent.extra.TEXT");
-		if (msg == null) {
-			// do nothing
-		}  else {
-			mCurSpinnerPos = 1;
-			memoText = msg;
-			currentTime = Calendar.getInstance().getTime();
-			saveMemoText();
-			showNotification();;
-		}
 
 		// Get extras from list activity
 		Bundle extras = getIntent().getExtras();
@@ -173,9 +110,8 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 				}
 			}
 		}
-
+		
 		final Spinner spinner = (Spinner) findViewById(R.id.spinner1);
-
 		ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
 				this, R.array.notification_types,
 				android.R.layout.simple_spinner_item);
@@ -214,6 +150,70 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 			}
 		});
 
+		
+		// Inflate a "Done/Discard" custom action bar view.
+		LayoutInflater inflater = (LayoutInflater) getActionBar()
+				.getThemedContext().getSystemService(LAYOUT_INFLATER_SERVICE);
+		final View customActionBarView = inflater.inflate(
+				R.layout.actionbar_custom_view_done_discard, null);
+		customActionBarView.findViewById(R.id.actionbar_done)
+				.setOnClickListener(new View.OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						memoText = editText.getText().toString();
+						// notify user if edit text is empty
+						if (memoText.matches("")) {
+							Crouton.makeText(EditMemoActivity.this,
+									R.string.toast_input_required, Style.ALERT,
+									R.id.alternate_view_group).show();
+							return;
+						}
+						// Get the spinner position
+						if (mCurSpinnerPos == 1) {
+							saveMemoText();
+							showNotification();
+						} else if (mCurSpinnerPos == 2) {
+							setAlarm(newCal);
+							finish();
+						} else {
+							saveMemoText();
+							finish();
+						}
+					}
+				});
+		customActionBarView.findViewById(R.id.actionbar_discard)
+				.setOnClickListener(new View.OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						finish();
+					}
+				});
+
+		// Show the custom action bar view and hide the normal Home icon and
+		// title.
+		final ActionBar actionBar = getActionBar();
+		actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM,
+				ActionBar.DISPLAY_SHOW_CUSTOM | ActionBar.DISPLAY_SHOW_HOME
+						| ActionBar.DISPLAY_SHOW_TITLE);
+		actionBar.setCustomView(customActionBarView,
+				new ActionBar.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+						ViewGroup.LayoutParams.MATCH_PARENT));
+
+
+		// // Get Note to Self intent
+		String msg = getIntent().getStringExtra("android.intent.extra.TEXT");
+		if (msg == null) {
+			return;
+		} else {
+			mCurSpinnerPos = 1;
+			memoText = msg;
+			currentTime = Calendar.getInstance().getTime();
+			saveMemoText();
+			showNotification();
+			;
+		}
+		
+
 	}
 
 	private void openTimePickerDialog(boolean is24HourView) {
@@ -233,8 +233,10 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 			memoText = editText.getText().toString();
 			cancelAlarm();
 			finish();
+			break;
 		case R.id.button_set_timer:
 			openTimePickerDialog(false);
+			break;
 		}
 
 	}
@@ -327,7 +329,6 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 		AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 		alarmManager.set(AlarmManager.RTC_WAKEUP, targetCal.getTimeInMillis(),
 				pendingIntent);
-
 
 		saveMemoText();
 
