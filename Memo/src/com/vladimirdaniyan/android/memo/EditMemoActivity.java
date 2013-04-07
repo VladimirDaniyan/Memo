@@ -211,7 +211,6 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 			@Override
 			public void onNothingSelected(AdapterView<?> parent) {
 				mCurSpinnerPos = 0;
-				//
 			}
 		});
 

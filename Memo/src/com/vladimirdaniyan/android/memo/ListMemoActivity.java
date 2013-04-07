@@ -67,9 +67,7 @@ public class ListMemoActivity extends ListActivity {
 					public Undoable onDismiss(ListView listView,
 							final int position) {
 						cursor.moveToPosition(position);
-						
-						
-						
+
 						final String memoText = cursor.getString(cursor
 								.getColumnIndexOrThrow("TEXT"));
 						final String alarmTime = cursor.getString(cursor
@@ -122,11 +120,6 @@ public class ListMemoActivity extends ListActivity {
 		cursor.moveToPosition(position);
 
 		Note memo = memoDao.loadByRowId(id);
-		
-//		this attribute was null in previous versions
-//		if (memo.getDate() == null){
-//			memo.setDate(Calendar.getInstance().getTime());
-//		}
 
 		Intent intent = new Intent(this, EditMemoActivity.class);
 		intent.putExtra("memoText",
