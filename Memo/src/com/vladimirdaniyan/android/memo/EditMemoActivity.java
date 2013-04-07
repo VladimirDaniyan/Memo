@@ -67,7 +67,7 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_edit_memo);
-		
+
 		currentTime = Calendar.getInstance().getTime();
 
 		DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, "memo-db",
@@ -85,7 +85,6 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 		Button changeTimer = (Button) findViewById(R.id.button_set_timer);
 		changeTimer.setOnClickListener(this);
 		cancelTimer.setOnClickListener(this);
-		
 
 		// Get extras from list activity
 		Bundle extras = getIntent().getExtras();
@@ -94,7 +93,6 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 			mRowId = extras.getLong("mRowId");
 			alarmTime = extras.getString("alarmTime");
 			currentTime = (Date) extras.get("currentTime");
-			// Log.d("LOG_TAG", "the value of currentTime is " + currentTime);
 			if (memoText != null && mRowId != null) {
 				editText.setText(memoText);
 				// mCurSpinnerPos = 0;
@@ -110,7 +108,7 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 				}
 			}
 		}
-		
+
 		final Spinner spinner = (Spinner) findViewById(R.id.spinner1);
 		ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
 				this, R.array.notification_types,
@@ -150,7 +148,6 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 			}
 		});
 
-		
 		// Inflate a "Done/Discard" custom action bar view.
 		LayoutInflater inflater = (LayoutInflater) getActionBar()
 				.getThemedContext().getSystemService(LAYOUT_INFLATER_SERVICE);
@@ -173,8 +170,12 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 							saveMemoText();
 							showNotification();
 						} else if (mCurSpinnerPos == 2) {
-							setAlarm(newCal);
-							finish();
+							if (newCal == null) {
+								finish();
+							} else {
+								setAlarm(newCal);
+								finish();
+							}
 						} else {
 							saveMemoText();
 							finish();
@@ -199,7 +200,6 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 				new ActionBar.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
 						ViewGroup.LayoutParams.MATCH_PARENT));
 
-
 		// // Get Note to Self intent
 		String msg = getIntent().getStringExtra("android.intent.extra.TEXT");
 		if (msg == null) {
@@ -207,12 +207,11 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 		} else {
 			mCurSpinnerPos = 1;
 			memoText = msg;
-			currentTime = Calendar.getInstance().getTime();
+			// currentTime = Calendar.getInstance().getTime();
 			saveMemoText();
 			showNotification();
 			;
 		}
-		
 
 	}
 
@@ -319,7 +318,7 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 						java.text.DateFormat.SHORT).format(targetCal.getTime());
 
 		// use the current time as a unique requestCode for the pending intent
-		currentTime = Calendar.getInstance().getTime();
+//		 currentTime = Calendar.getInstance().getTime();
 
 		Intent alarmIntent = new Intent(getBaseContext(), TimerReceiver.class);
 		alarmIntent.putExtra("memoText", memoText);
@@ -331,8 +330,6 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 				pendingIntent);
 
 		saveMemoText();
-
-		db.close();
 
 	}
 
