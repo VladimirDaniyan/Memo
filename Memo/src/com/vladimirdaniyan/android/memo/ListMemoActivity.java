@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -32,6 +33,11 @@ public class ListMemoActivity extends ListActivity {
 	private Cursor cursor;
 
 	private SQLiteDatabase db;
+	private String alarmTime;
+	private long mRowId;
+	private Note memo;
+	private String memoText;
+	protected Date currentTimeRequestCode;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -46,7 +52,7 @@ public class ListMemoActivity extends ListActivity {
 		memoDao = daoSession.getNoteDao();
 
 		final String textColumn = NoteDao.Properties.Text.columnName;
-		final String alarmTime = NoteDao.Properties.Comment.columnName;
+		alarmTime = NoteDao.Properties.Comment.columnName;
 
 		cursor = db.query(memoDao.getTablename(), memoDao.getAllColumns(),
 				null, null, null, null, null);
@@ -66,15 +72,16 @@ public class ListMemoActivity extends ListActivity {
 					@SuppressWarnings("deprecation")
 					public Undoable onDismiss(ListView listView,
 							final int position) {
-						cursor.moveToPosition(position);
-
-						final String memoText = cursor.getString(cursor
-								.getColumnIndexOrThrow("TEXT"));
-						final String alarmTime = cursor.getString(cursor
-								.getColumnIndexOrThrow("COMMENT"));
-						final long mRowId = adapter.getItemId(position);
-						Note memo = memoDao.loadByRowId(mRowId);
-						final Date currentTimeRequestCode = memo.getDate();
+						// make sure cursor exists
+						if (cursor.moveToPosition(position)) {
+							memoText = cursor.getString(cursor
+									.getColumnIndexOrThrow("TEXT"));
+							alarmTime = cursor.getString(cursor
+									.getColumnIndexOrThrow("COMMENT"));
+							mRowId = adapter.getItemId(position);
+							memo = memoDao.loadByRowId(mRowId);
+							currentTimeRequestCode = memo.getDate();
+						}
 
 						memoDao.deleteByKey(mRowId);
 						cursor.requery();
@@ -82,9 +89,14 @@ public class ListMemoActivity extends ListActivity {
 
 							@Override
 							public void undo() {
-								Note memo = new Note(mRowId, memoText,
+								memo = new Note(mRowId, memoText,
 										alarmTime, currentTimeRequestCode);
-								memoDao.insert(memo);
+								try {
+									memoDao.insertOrReplace(memo);
+								} catch (Exception e) {
+									Log.e("MEMO", "exception", e);
+									e.printStackTrace();
+								}
 								cursor.requery();
 							}
 

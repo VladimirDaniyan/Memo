@@ -74,12 +74,12 @@
             android:text="@string/cancel_timer" />
 
         <Button
-            android:id="@+id/button_set_timer"
+            android:id="@+id/button_change_timer"
             style="?android:attr/buttonBarButtonStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/set_timer" />
+            android:text="@string/change_timer" />
     </LinearLayout>
 
 </RelativeLayout>

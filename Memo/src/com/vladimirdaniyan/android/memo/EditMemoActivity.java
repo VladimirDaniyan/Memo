@@ -82,7 +82,7 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 		divider = findViewById(R.id.divider);
 
 		Button cancelTimer = (Button) findViewById(R.id.button_cancel_timer);
-		Button changeTimer = (Button) findViewById(R.id.button_set_timer);
+		Button changeTimer = (Button) findViewById(R.id.button_change_timer);
 		changeTimer.setOnClickListener(this);
 		cancelTimer.setOnClickListener(this);
 
@@ -231,13 +231,15 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 
 	@Override
 	public void onClick(View v) {
+		memoText = editText.getText().toString();
 		switch (v.getId()) {
 		case R.id.button_cancel_timer:
-			memoText = editText.getText().toString();
 			cancelAlarm();
+//			db.close();
 			finish();
 			break;
-		case R.id.button_set_timer:
+		case R.id.button_change_timer:
+			cancelAlarm();
 			openTimePickerDialog(false);
 			break;
 		}
@@ -339,6 +341,8 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 
 	// clear the timer and its text in the main listview
 	private void cancelAlarm() {
+		
+		
 
 		Intent alarmIntent = new Intent(getBaseContext(), TimerReceiver.class);
 		PendingIntent pendingIntent = PendingIntent.getBroadcast(
@@ -353,8 +357,6 @@ public class EditMemoActivity extends Activity implements OnClickListener,
 		memo.setComment(alarmTime);
 		memo.setDate(currentTime);
 		memoDao.insertOrReplace(memo);
-
-		db.close();
 	}
 
 	@Override

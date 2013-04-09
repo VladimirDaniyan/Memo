@@ -14,8 +14,9 @@
     <string name="toast_input_required">You did not enter any text</string>
     <string name="enter_text_hint">Add a new memo</string>
     <string name="no_memos_yet">no memos yet, tap to add</string>
+    
     <string name="cancel_timer">Clear Timer</string>
-    <string name="set_timer">Change Timer</string>
+    <string name="change_timer">Change Timer</string>
     
      <string name="done">Save</string>
     <string name="discard">Discard</string>
